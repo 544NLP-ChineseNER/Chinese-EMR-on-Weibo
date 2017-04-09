@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
+import jieba
+import multiprocessing
+import os
+import time
+
 from logging import Logger
 from gensim.corpora import WikiCorpus
 from opencc import OpenCC
-import time
-import jieba
-
-import multiprocessing
-
 from gensim.models import Word2Vec
 from gensim.models.word2vec import LineSentence
 
+from settings import config
 
 class ChineseWikiTrain:
     def __init__(self,**kwargs):
@@ -19,10 +20,9 @@ class ChineseWikiTrain:
         '''
         # self.logger = kwargs['logger']
         self.logger = Logger('train')
-        if('input' not in kwargs):	self.input_path = "../../media/word2vec/zhwiki-latest-pages-articles.xml.bz2"
-        else:	self.input_path = kwargs['input']
-        if('ouput' not in kwargs):	self.output_path = "../../media/word2vec/"
-        else:	self.output_path = kwargs['out']
+        self.input_path = kwargs.get("input",
+                                     os.path.join(config.WORD2VEC_ROOT ,"zhwiki-latest-pages-articles.xml.bz2")
+        self.output_path = kwargs.get("output", config.WORD2VEC_ROOT)
 
     def xml_to_txt(self):
         '''
@@ -30,7 +30,7 @@ class ChineseWikiTrain:
         '''
         self.logger.info("transfering xml to txt...")
         inp = self.input_path
-        outp = self.output_path + "wiki.zh.text"
+        outp = os.path.join(self.output_path , "wiki.zh.text")
         space = " "
         i = 0
         output = open(outp, 'w')
@@ -68,26 +68,29 @@ class ChineseWikiTrain:
         '''
         self.logger.info('tokenization start...')
         jieba.enable_parallel(8)
-        inp = self.output_path + 'wiki.zh.text.simplified'
-        output = self.output_path + 'wiki.zh.text.simplified_seg'
-        log_f = open(output,"wb")
+        inp = os.path.join(self.input_path, 'wiki.zh.text.simplified')
+        output = os.path.join(self.output_path, 'wiki.zh.text.simplified_seg')
+
+        log_f = open(output, "wb", encoding="utf-8")
 
         t1 = time.time()
-        lines = open(inp,"rb").readlines()
+        lines = open(inp, "rb", encoding="utf-8").readlines()
         for line in lines:
             words = " ".join(jieba.cut(line))
             log_f.write(words.encode('utf-8'))
         t2 = time.time()
         tm_cost = t2-t1
         self.logger.info('tokenization finished! time consumption:%s' %tm_cost)
+        log_f.close()
+
 
     def train(self):
         '''
         train word2vec from wiki
         '''
         self.logger.info('start training...')
-        inp = self.output_path + 'wiki.zh.text.simplified'
-        outp1 = self.output_path + 'wiki.word2vec.model'
+        inp = os.path.join(self.input_path, 'wiki.zh.text.simplified')
+        outp1 = os.path.join(self.output_path, 'wiki.word2vec.model')
 
         model = Word2Vec(LineSentence(inp), size=300, window=5, min_count=5,
                          workers=multiprocessing.cpu_count(), iter=3)

@@ -16,4 +16,6 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
 DICT_ROOT = os.path.join(MEDIA_ROOT, 'dicts')
 LOG_ROOT = os.path.join(PROJECT_ROOT, 'logs')
 
+SPELLING_ROOT = os.path.join(DICT_ROOT, 'spelling_decomposition')
+WORD2VEC_ROOT = os.path.join(DICT_ROOT, 'word2vec')
 
