@@ -13,6 +13,7 @@ LOG_LEVEL = 2
 # Directory related configs
 PROJECT_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../')
 MEDIA_ROOT = os.path.join(PROJECT_ROOT, 'media')
+DICT_ROOT = os.path.join(MEDIA_ROOT, 'dicts')
 LOG_ROOT = os.path.join(PROJECT_ROOT, 'logs')
 
 

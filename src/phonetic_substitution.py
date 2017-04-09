@@ -4,6 +4,7 @@ import re
 from pypinyin import pinyin, lazy_pinyin
 
 from src.common import CN_CHAR_REGEX
+from src.logger import Logger, EmptyLogger
 
 from settings import config
 
@@ -13,7 +14,10 @@ class PhoneticSubstitution:
         try:
             self.name_dict = kwargs.get("person_name_dict")
         except KeyError as e:
-            self.logger.warning(e + " is not provided when initializing PhoneticSubstitution.")
+            if e == "logger":
+                self.logger = EmptyLogger()
+            elif e == "person_name_dict":
+                self.logger.warning(str(e) + " is not provided when initializing PhoneticSubstitution.")
 
         self.mis_match_penalty = 4
         self.mis_match_similar_phone_penalty = 1
@@ -23,8 +27,9 @@ class PhoneticSubstitution:
         self.similar_phones = {"SX", "JK", "LR", "IY", "FW", "MN"}
         self.ignore_phones = {"R", "Y"}
 
+        self.similarity_score_lower_bound = 0.75
 
-    def phone_edit_distance(self, str_a, str_b):
+    def _phone_edit_distance(self, str_a, str_b):
         '''
         Calculate string-edit-distance-like difference for two strings
         considering special conditions when translating phones from
@@ -36,6 +41,12 @@ class PhoneticSubstitution:
         len_a, len_b = len(str_a), len(str_b)
 
         dp = [[0 for i in range(len_b + 1)] for j in range(len_a + 1)]
+
+        for i in range(1, len_a + 1):
+            dp[i][0] = self.ignore_phone_penalty * i
+
+        for j in range(1, len_b + 1):
+            dp[0][j] = self.ignore_phone_penalty * j
 
         for i in range(len_a):
             for j in range(len_b):
@@ -59,6 +70,7 @@ class PhoneticSubstitution:
     def get_pinyin(self, characters, space_seperated=False):
         '''
         Convert Chinese characters to latin-style pinyin
+        :param space_seperated: (Boolean) determiner for adding a space between output words
         :param characters: (String) Chinese characters
         :return: (String) converted pinyin, with a space between every character's pinyin
         '''
@@ -86,7 +98,6 @@ class PhoneticSubstitution:
 
         return "".join(result)
 
-
     def _get_initial_pinyin_letter(self, characters):
         '''
         Convert Chinese characters into latin-style pinyin
@@ -96,7 +107,6 @@ class PhoneticSubstitution:
         '''
         pinyin_string = self.get_pinyin(characters)
         return "".join([p[0] for p in pinyin_string.split(" ")])
-
 
     def get_similarity_score(self, str_a, str_b):
         '''
@@ -108,26 +118,32 @@ class PhoneticSubstitution:
         '''
         cn_str_a = self.get_pinyin("".join(str_a), space_seperated=False)
         cn_str_b = self.get_pinyin("".join(str_b), space_seperated=False)
-
-        if config.DEBUG:
-            print(cn_str_a, cn_str_b)
-
         phone_a, phone_b = jellyfish.metaphone(cn_str_a), jellyfish.metaphone(cn_str_b)
 
         if config.DEBUG:
             print(phone_a, phone_b)
 
-        edit_distance = self.phone_edit_distance(phone_a, phone_b)
-
+        # Calculate phone edit distance and phone similarity
+        edit_distance = self._phone_edit_distance(phone_a, phone_b)
         max_score = max(len(phone_a), len(phone_b)) * 4 - abs(len(phone_a) - len(phone_b))
-
         similarity = 1 - edit_distance / max_score
 
         return similarity
 
+    def get_similar_names(self, name):
+        '''
+        Predict possible name for an entity morph
+        :param name:
+        :return:(Dict){<name>: <confidence score>, ...}
+                       <name> : (String) name ofpossible entity morph
+                       <confidence_score>: (float)
+        '''
+        pass
+
 
 if __name__ == '__main__':
-    py_converter = PhoneticSubstitution([])
-    #print(py_converter.get_pinyin("菜English", space_seperated=True))
-    print(py_converter.get_similarity_score(u"抖森", "Hiddlestondanger"))
+    logger = EmptyLogger()
+    py_converter = PhoneticSubstitution(logger=logger)
+    print(py_converter.get_pinyin("菜English", space_seperated=True))
+    #print(py_converter.get_similarity_score(u"泰勒斯威夫特", "泰勒十万伏特"))
     #print(py_converter.phone_edit_distance("KBBRYNT", "KBBLNT"))

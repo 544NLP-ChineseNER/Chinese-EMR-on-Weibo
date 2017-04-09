@@ -1,6 +1,7 @@
+import os
 
-
-from src.phonetic import PhoneticSubstitution
+from settings import config
+from src.phonetic_substitution import PhoneticSubstitution
 from src.common import CN_CHAR_REGEX
 from src.logger import Logger
 
@@ -34,5 +35,5 @@ class EMRecognition:
 
 
 if __name__ == '__main__':
-    emr = EMRecognition()
+     emr = EMRecognition()
 
