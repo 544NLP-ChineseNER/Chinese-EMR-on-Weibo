@@ -1,3 +1,7 @@
+# Dependencies
+'''
+pip install -r requirements.txt
+'''
 # Data
 Download wikipedia dump from: [https://dumps.wikimedia.org/zhwiki/latest/zhwiki-latest-pages-articles.xml.bz2](https://dumps.wikimedia.org/zhwiki/latest/zhwiki-latest-pages-articles.xml.bz2)
 
@@ -5,7 +9,7 @@ Put the data into media/word2vec/ folder.
 
 # Data Preprocessing
 * Extract Chinese words from downloaded xml files using.
-* Transfer traditional version into simplified version text. Use [opencc](https://github.com/yichen0831/opencc-python)
+* Convert traditional version into simplified version text. Use [opencc](https://github.com/yichen0831/opencc-python)
 
 ```
 'hk2s': Traditional Chinese (Hong Kong standard) to Simplified Chinese 
