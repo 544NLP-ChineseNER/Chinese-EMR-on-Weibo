@@ -1,7 +1,7 @@
 # Dependencies
-'''
+```
 pip install -r requirements.txt
-'''
+```
 # Data
 Download wikipedia dump from: [https://dumps.wikimedia.org/zhwiki/latest/zhwiki-latest-pages-articles.xml.bz2](https://dumps.wikimedia.org/zhwiki/latest/zhwiki-latest-pages-articles.xml.bz2)
 
