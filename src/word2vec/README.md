@@ -27,7 +27,7 @@ Put the data into media/word2vec/ folder.
 * Tokenize sentence into words for training. Use [jieba](https://github.com/fxsjy/jieba)
 
 # Train
-Produce word vectors with deep learning via word2vec’s “skip-gram and CBOW models”, using either hierarchical softmax or negative sampling [[1]](https://radimrehurek.com/gensim/models/word2vec.html#id4) [[2]](https://radimrehurek.com/gensim/models/word2vec.html#id5).
+Produce word vectors with deep learning via word2vec’s “skip-gram and CBOW models”, using either hierarchical softmax or negative sampling [[1]](https://arxiv.org/pdf/1301.3781.pdf) [[2]](http://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf).
 
 The training algorithms were originally ported from the C package [https://code.google.com/p/word2vec/](https://code.google.com/p/word2vec/) and extended with additional functionality.
 
