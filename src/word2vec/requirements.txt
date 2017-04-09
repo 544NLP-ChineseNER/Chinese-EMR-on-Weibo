@@ -1,0 +1,3 @@
+gensim==0.13.4.1
+jieba==0.38
+OpenCC==0.2
