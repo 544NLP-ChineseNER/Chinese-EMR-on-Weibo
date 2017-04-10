@@ -168,7 +168,7 @@ if __name__ == '__main__':
     logger = EmptyLogger()
 
     names = ['Eminem', "泰勒斯威夫特", "蕾哈娜", "酷玩", "Gotye", "ColdPlay", "贾斯汀比伯", "Drake",
-             "恩雅", "老鹰", "Colben", "KitHarrington", "Chainsmokers", "GreenDay", "林肯公园"]
+             "恩雅", "老鹰", "Colben", "KitHarrington", "Chainsmokers", "GreenDay", "林肯公园", "Franco" ]
 
     py_converter = PhoneticSubstitution(logger=logger, name_list=names)
     print(py_converter.get_pinyin("菜English", space_seperated=True))
@@ -176,3 +176,4 @@ if __name__ == '__main__':
     #print(py_converter.get_similarity_score(u"泰勒斯威夫特", "泰勒十万伏特"))
     #print(py_converter.phone_edit_distance("KBBRYNT", "KBBLNT"))
     print(py_converter.get_similar_names("泰勒十万伏特"))
+    print(py_converter.get_similar_names("付兰"))
