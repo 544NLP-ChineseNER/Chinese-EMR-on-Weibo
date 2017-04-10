@@ -1,22 +1,26 @@
+import heapq
 import jellyfish
+import os
 import re
 
 from pypinyin import pinyin, lazy_pinyin
 
+from settings import config
 from src.common import CN_CHAR_REGEX
 from src.logger import Logger, EmptyLogger
 
-from settings import config
 
 class PhoneticSubstitution:
     def __init__(self, *args, **kwargs):
         self.logger = kwargs['logger']
+        self.max_similar_names = kwargs.get('max_similar_names', 5)
+
         try:
-            self.name_dict = kwargs.get("person_name_dict")
+            self.name_list = kwargs.get("name_list")
         except KeyError as e:
             if e == "logger":
                 self.logger = EmptyLogger()
-            elif e == "person_name_dict":
+            elif e == "name_list":
                 self.logger.warning(str(e) + " is not provided when initializing PhoneticSubstitution.")
 
         self.mis_match_penalty = 4
@@ -130,20 +134,45 @@ class PhoneticSubstitution:
 
         return similarity
 
-    def get_similar_names(self, name):
+    def get_similar_names(self, _name):
         '''
         Predict possible name for an entity morph
-        :param name:
+        :param _name: (String) name to compare
         :return:(Dict){<name>: <confidence score>, ...}
                        <name> : (String) name ofpossible entity morph
                        <confidence_score>: (float)
         '''
-        pass
+
+        if self.name_list is None:
+            self.logger.error("name_dict is not initialized.")
+            return
+
+        # Use heap to store names with the highest score
+        top_names = []
+
+        for person_name in self.name_list:
+            similarity_score = self.get_similarity_score(_name, person_name)
+            if len(top_names) < self.max_similar_names:
+                heapq.heappush(top_names, (similarity_score, person_name))
+            else:
+                if similarity_score > top_names[0][0]:
+                    heapq.heappop(top_names)
+                    heapq.heappush(top_names, (similarity_score, person_name))
+
+        top_names = sorted(top_names, key=lambda x: x[0], reverse=True)
+
+        return {name: score for (score, name) in top_names}
 
 
 if __name__ == '__main__':
     logger = EmptyLogger()
-    py_converter = PhoneticSubstitution(logger=logger)
+
+    names = ['Eminem', "泰勒斯威夫特", "蕾哈娜", "酷玩", "Gotye", "ColdPlay", "贾斯汀比伯", "Drake",
+             "恩雅", "老鹰", "Colben", "KitHarrington", "Chainsmokers", "GreenDay", "林肯公园"]
+
+    py_converter = PhoneticSubstitution(logger=logger, name_list=names)
     print(py_converter.get_pinyin("菜English", space_seperated=True))
+
     #print(py_converter.get_similarity_score(u"泰勒斯威夫特", "泰勒十万伏特"))
     #print(py_converter.phone_edit_distance("KBBRYNT", "KBBLNT"))
+    print(py_converter.get_similar_names("泰勒十万伏特"))
