@@ -2,7 +2,7 @@ import jieba
 
 
 class NicknameGeneration:
-    stopwords = ["阿", "哥", "姐", "弟", "爷", "叔", "大", "小", "老"]
+    stopwords = ["阿", "哥", "姐", "弟", "爷", "叔", "姑", "婆", "大", "小", "老", "太"]
 
     def __init__(self, nickname):
         self.nickname = nickname
