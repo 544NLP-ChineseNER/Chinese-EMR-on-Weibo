@@ -1,8 +1,6 @@
 from gensim.models import Word2Vec
 import logging
-import sys
 import os
-sys.path.append('../../')
 from settings.config import WORD2VEC_ROOT
 
 class Characteristic:
@@ -44,7 +42,7 @@ class Characteristic:
         :return: (list) a list of related words
         '''
         try:
-            names = self.model.similar_by_word(word, topn=500)
+            names = self.model.similar_by_word(word, topn=20)
         except KeyError as e:
             self.logger.error(e)
         for name in names:

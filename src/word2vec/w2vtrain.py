@@ -9,8 +9,7 @@ from gensim.corpora import WikiCorpus
 from opencc import OpenCC
 from gensim.models import Word2Vec
 from gensim.models.word2vec import LineSentence
-import sys
-sys.path.append('../../')
+
 from settings import config
 
 class ChineseWikiTrain:
