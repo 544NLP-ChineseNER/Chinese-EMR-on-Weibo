@@ -167,7 +167,7 @@ class SpellingDecomposition:
 
 if __name__ == "__main__":
     empty_logger = EmptyLogger()
-    name_list = ["Bakery", "和谐社会", "周涛", "李咏", "这是啥啊", "Barack Obama"]
+    name_list = ["Bakery", "和谐社会", "李鹏", "李咏", "这是啥啊", "Barack Obama"]
     spd = SpellingDecomposition(logger=empty_logger, use_raw_dict=True, name_list=name_list)
 
-    print(spd.get_similar_names("李口永"))
+    print(spd.get_similar_names("李月月鸟"))

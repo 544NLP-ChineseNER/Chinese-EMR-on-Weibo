@@ -173,7 +173,7 @@ if __name__ == '__main__':
     py_converter = PhoneticSubstitution(logger=logger, name_list=names)
     print(py_converter.get_pinyin("菜English", space_seperated=True))
 
-    #print(py_converter.get_similarity_score(u"泰勒斯威夫特", "泰勒十万伏特"))
+    print(py_converter.get_similarity_score(u"泰勒斯威夫特", "泰勒十万伏特"))
     #print(py_converter.phone_edit_distance("KBBRYNT", "KBBLNT"))
-    print(py_converter.get_similar_names("泰勒十万伏特"))
-    print(py_converter.get_similar_names("付兰"))
+    #print(py_converter.get_similar_names("泰勒十万伏特"))
+    #print(py_converter.get_similar_names("付兰"))

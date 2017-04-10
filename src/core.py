@@ -2,6 +2,7 @@ import os
 
 from settings import config
 from src.phonetic_substitution import PhoneticSubstitution
+from src.spelling_decomposition import SpellingDecomposition
 from src.nickname import NicknameGeneration
 from src.common import CN_CHAR_REGEX
 from src.logger import Logger
@@ -13,7 +14,7 @@ class EMRecognition:
         '''
 
         '''Recognition_modules stores classes of every method for EMR recognition'''
-        recognition_modules = [PhoneticSubstitution, NicknameGeneration]
+        self.recognition_modules = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition]
 
         ''' recognition_objects stores instances of every module as
             {<module_name>: ['object': <module_object>, 'confidence': <float>], ...}'''
@@ -52,5 +53,16 @@ class EMRecognition:
 
 
 if __name__ == '__main__':
-     emr = EMRecognition()
+    emr = EMRecognition()
+    # names = set()
+    # with open(os.path.join(config.DICT_ROOT, "celebrity.txt"), encoding="utf-8") as f:
+    #     for line in f:
+    #         names.add(line)
+    #
+    # new_file = open(os.path.join(config.DICT_ROOT, "celebrity_dedup.txt"), 'w', encoding="utf-8")
+    # for n in names:
+    #     new_file.write(n)
+    #
+    # new_file.close()
+
 
