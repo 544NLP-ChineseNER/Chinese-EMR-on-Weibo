@@ -9,7 +9,8 @@ from gensim.corpora import WikiCorpus
 from opencc import OpenCC
 from gensim.models import Word2Vec
 from gensim.models.word2vec import LineSentence
-
+import sys
+sys.path.append('../../')
 from settings import config
 
 class ChineseWikiTrain:
@@ -21,7 +22,9 @@ class ChineseWikiTrain:
         # self.logger = kwargs['logger']
         self.logger = Logger('train')
         self.input_path = kwargs.get("input",
-                                     os.path.join(config.WORD2VEC_ROOT ,"zhwiki-latest-pages-articles.xml.bz2")
+                                     os.path.join(config.WORD2VEC_ROOT ,"zhwiki-latest-pages-articles.xml.bz2"))
+        print(config.WORD2VEC_ROOT)
+        print(os.path.join(config.WORD2VEC_ROOT ,"zhwiki-latest-pages-articles.xml.bz2"))
         self.output_path = kwargs.get("output", config.WORD2VEC_ROOT)
 
     def xml_to_txt(self):
@@ -52,9 +55,9 @@ class ChineseWikiTrain:
         '''
         self.logger.info('convertion start...')
         openCC = OpenCC('t2s') # convert from Traditional Chinese to Simplified Chinese
-        f = open(self.output_path+"wiki.zh.text",'r')
+        f = open(os.path.join(self.output_path,"wiki.zh.text"),'r')
         lines = f.readlines()
-        s = open(self.output_path+"wiki.zh.text.simplified",'w')
+        s = open(os.path.join(self.output_path,"wiki.zh.text.simplified"),'w')
         for line in lines:
             converted = openCC.convert(line)
             s.write(converted)
@@ -68,13 +71,13 @@ class ChineseWikiTrain:
         '''
         self.logger.info('tokenization start...')
         jieba.enable_parallel(8)
-        inp = os.path.join(self.input_path, 'wiki.zh.text.simplified')
+        inp = os.path.join(self.output_path, 'wiki.zh.text.simplified')
         output = os.path.join(self.output_path, 'wiki.zh.text.simplified_seg')
 
-        log_f = open(output, "wb", encoding="utf-8")
+        log_f = open(output, "wb")
 
         t1 = time.time()
-        lines = open(inp, "rb", encoding="utf-8").readlines()
+        lines = open(inp, "rb").readlines()
         for line in lines:
             words = " ".join(jieba.cut(line))
             log_f.write(words.encode('utf-8'))
@@ -89,8 +92,8 @@ class ChineseWikiTrain:
         train word2vec from wiki
         '''
         self.logger.info('start training...')
-        inp = os.path.join(self.input_path, 'wiki.zh.text.simplified')
-        outp1 = os.path.join(self.output_path, 'wiki.word2vec.model')
+        inp = os.path.join(self.output_path, 'wiki.zh.text.simplified')
+        outp1 = os.path.join(self.output_path, 'wik.word2vec.model')
 
         model = Word2Vec(LineSentence(inp), size=300, window=5, min_count=5,
                          workers=multiprocessing.cpu_count(), iter=3)
