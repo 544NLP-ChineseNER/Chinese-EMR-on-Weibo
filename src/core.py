@@ -4,6 +4,7 @@ from settings import config
 from src.phonetic_substitution import PhoneticSubstitution
 from src.spelling_decomposition import SpellingDecomposition
 from src.nickname import NicknameGeneration
+from src.translation_and_transliteration import Translation
 from src.common import CN_CHAR_REGEX
 from src.logger import Logger
 
@@ -14,7 +15,7 @@ class EMRecognition:
         '''
 
         '''Recognition_modules stores classes of every method for EMR recognition'''
-        self.recognition_modules = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition]
+        self.recognition_modules = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition,Translation]
 
         ''' recognition_objects stores instances of every module as
             {<module_name>: ['object': <module_object>, 'confidence': <float>], ...}'''
