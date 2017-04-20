@@ -1,4 +1,4 @@
-import jieba
+#import jieba
 
 
 class NicknameGeneration:
@@ -37,6 +37,51 @@ class NicknameGeneration:
                 max = self.calculate_similarity_score(str_a, i)
         return max
 
+    def nb_learn(self, training_file):
+        prior = {}
+        likelihood = {}
+        with open(training_file, "r", encoding='UTF-8') as inFile:
+            data = inFile.read()
+        line = data.splitlines()
+        size = len(line)
+        for l in line:
+            wordlist = l.split(' ')
+            if wordlist[1] not in prior:
+                prior[wordlist[1]] = 1.0
+            else:
+                prior[wordlist[1]] += 1
+            outerkey = wordlist[1]
+            innerkey = wordlist[0]
+            likelihood[outerkey] = likelihood.get(outerkey, {})
+            likelihood[outerkey][innerkey] = likelihood[outerkey].get(innerkey, 0.0)
+            likelihood[outerkey][innerkey] += 1
+        # Prior probability
+        for key in prior:
+            prior[key] /= size
+        # Convert to probability
+        for key in likelihood:
+            di = likelihood[key]
+            s = sum(di.values())
+            for innkey in di:
+                di[innkey] /= s
+            likelihood[key] = di
+        return prior, likelihood
+
+    def nb_classify(self, name_entity, morph, prior, likelihood):
+        max = 0.0
+        for name in name_entity:
+            outerkey = name
+            innerkey = morph
+            prior[outerkey] = prior.get(outerkey, 0.0)
+            likelihood[outerkey] = likelihood.get(outerkey, {})
+            likelihood[outerkey][innerkey] = likelihood[outerkey].get(innerkey, 0.0)
+            p_likelihood = likelihood[outerkey][innerkey]
+            p = prior[name] * p_likelihood
+            if p > max:
+                result = name
+                max = p
+        return result
+
     def nickname_generation(self):
         with open("../media/dicts/celebrity.txt", "r", encoding='UTF-8')as infile:
             data = infile.read()
@@ -49,6 +94,10 @@ class NicknameGeneration:
         return name_entity
 
 if __name__ == '__main__':
-    nick = NicknameGeneration("笔笔")
-    print(nick.nickname_generation())
+    morph = '涛涛'
+    nick = NicknameGeneration(morph)
+    name_entity = nick.nickname_generation()
+    prior, likelihood = nick.nb_learn("../media/dicts/morph-entity.txt")
+    result = nick.nb_classify(name_entity, morph, prior, likelihood)
+    print(result)
 
