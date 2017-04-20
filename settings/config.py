@@ -18,4 +18,5 @@ LOG_ROOT = os.path.join(PROJECT_ROOT, 'logs')
 
 SPELLING_ROOT = os.path.join(DICT_ROOT, 'spelling_decomposition')
 WORD2VEC_ROOT = os.path.join(DICT_ROOT, 'word2vec')
+NER_ROOT = os.path.join(DICT_ROOT, 'ner')
 

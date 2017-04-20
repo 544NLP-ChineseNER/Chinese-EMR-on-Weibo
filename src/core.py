@@ -1,12 +1,15 @@
 import os
 
 from settings import config
-from src.phonetic_substitution import PhoneticSubstitution
-from src.spelling_decomposition import SpellingDecomposition
-from src.nickname import NicknameGeneration
-from src.translation_and_transliteration import Translation
 from src.common import CN_CHAR_REGEX
 from src.logger import Logger
+
+from src.ner import ChineseNER
+from src.nickname import NicknameGeneration
+from src.phonetic_substitution import PhoneticSubstitution
+from src.spelling_decomposition import SpellingDecomposition
+from src.translation_and_transliteration import Translation
+
 
 class EMRecognition:
     def __init__(self, config=None):
@@ -37,6 +40,8 @@ class EMRecognition:
                 'confidence': 1.0
             }
 
+        self.ner_module = ChineseNER()
+
         pass
 
     def recognize_tweet(self, tweet):
@@ -49,8 +54,19 @@ class EMRecognition:
                 The string represents possible name morphs;
                 The float number represents confidence calculate by our model.
         '''
-        pass
 
+        # Extract names from tweet:
+        person_names = self.ner_module.extract_name_entities_from_sentence(tweet)
+
+        # Recognize with every method and generate a list of
+        # possible names from each method
+
+        results = {}
+        for n in person_names:
+            for module in self.recognition_modules:
+                results[n][module.__class__] = module.get_similar_names(n)
+
+        print(results)
 
 
 if __name__ == '__main__':

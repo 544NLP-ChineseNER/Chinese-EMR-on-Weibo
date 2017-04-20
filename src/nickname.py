@@ -1,5 +1,7 @@
 import jieba
+import os
 
+from settings import config
 
 class NicknameGeneration:
     stopwords = ["阿", "哥", "姐", "弟", "爷", "叔", "姑", "婆", "大", "小", "老", "太"]
@@ -29,11 +31,11 @@ class NicknameGeneration:
         :return: (float) Similarity score ranging between 0 to 1
         '''
         max = 0
-        if (self.calculate_similarity_score(str_a, str_b) > max):
+        if self.calculate_similarity_score(str_a, str_b) > max:
             max = self.calculate_similarity_score(str_a, str_b)
         seg_list = jieba.cut(str_b)
         for i in seg_list:
-            if (self.calculate_similarity_score(str_a, i) > max):
+            if self.calculate_similarity_score(str_a, i) > max:
                 max = self.calculate_similarity_score(str_a, i)
         return max
 
@@ -68,7 +70,7 @@ class NicknameGeneration:
         return prior, likelihood
 
     def nb_classify(self, name_entity, morph, prior, likelihood):
-        max = 0.0
+        max_likelihood = 0.0
         result = name_entity[0]
         for name in name_entity:
             outerkey = name
@@ -78,13 +80,13 @@ class NicknameGeneration:
             likelihood[outerkey][innerkey] = likelihood[outerkey].get(innerkey, 0.0)
             p_likelihood = likelihood[outerkey][innerkey]
             p = prior[name] * p_likelihood
-            if p > max:
+            if p > max_likelihood:
                 result = name
-                max = p
+                max_likelihood = p
         return result
 
     def nickname_generation(self):
-        with open("../media/dicts/celebrity.txt", "r", encoding='UTF-8')as infile:
+        with open(os.path.join(config.DICT_ROOT, "celebrity.txt"), "r", encoding='UTF-8')as infile:
             data = infile.read()
         line = data.splitlines()
         name_entity = []
@@ -98,7 +100,7 @@ if __name__ == '__main__':
     morph = '涛涛'
     nick = NicknameGeneration(morph)
     name_entity = nick.nickname_generation()
-    prior, likelihood = nick.nb_learn("../media/dicts/morph-entity.txt")
+    prior, likelihood = nick.nb_learn(os.path.join(config.DICT_ROOT, "morph-entity.txt"))
     result = nick.nb_classify(name_entity, morph, prior, likelihood)
     print(result)
 
