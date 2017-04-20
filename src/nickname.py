@@ -69,6 +69,7 @@ class NicknameGeneration:
 
     def nb_classify(self, name_entity, morph, prior, likelihood):
         max = 0.0
+        result = name_entity[0]
         for name in name_entity:
             outerkey = name
             innerkey = morph
