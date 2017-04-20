@@ -168,6 +168,10 @@ class SpellingDecomposition:
 if __name__ == "__main__":
     empty_logger = EmptyLogger()
     name_list = ["Bakery", "和谐社会", "李鹏", "李咏", "这是啥啊", "Barack Obama"]
+    #   [Bakery, Harmonic Society, Peng Li (A former Chinese leader), Yong Li (Famous host), WhatIsDat, Barack Obama
     spd = SpellingDecomposition(logger=empty_logger, use_raw_dict=True, name_list=name_list)
 
+                                # Li Moon Moon Bird
+                                # Moon Moon Bird => Name of a huge bird
+                                # Moon Moon   => Friend
     print(spd.get_similar_names("李月月鸟"))

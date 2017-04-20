@@ -1,4 +1,4 @@
- #-*- coding: UTF-8 -*-   
+ #-*- coding: UTF-8 -*-
 from translate import Translator
 import heapq
 
@@ -10,7 +10,7 @@ class Translation:
 
         self.name_list = namelist
         self.treshold = 10
-    
+
     def get_levenshtein_distance(self,str_a,len_a,str_b,len_b):
         '''
         :Calculate the levenshtein distance of two strings
@@ -20,19 +20,19 @@ class Translation:
         :param len_b: (int) length of substring of str_b being calculating
         :return: (float) unnormalized levenshtein distance score
         '''
-        cost = 0;
+        cost = 0
         
         #if anyone is empty
-        if(len_a == 0):
+        if len_a == 0:
             return len_b
-        if(len_b == 0):
+        if len_b == 0:
             return len_a
         
         #if last characters of the strings match
         if(str_a[len_a-1:len_a] == str_b[len_b-1:len_b]):
-            cost = 0;
+            cost = 0
         else:
-            cost = 1;
+            cost = 1
             
         #return the  minimum number of edits
         return min(self.get_levenshtein_distance(str_a, len_a-1, str_b,len_b)+1,self.get_levenshtein_distance(str_a,len_a,str_b,len_b-1)+1,self.get_levenshtein_distance(str_a,len_a-1,str_b,len_b-1)+cost)
@@ -59,13 +59,15 @@ class Translation:
         :return: (float) Similarity score ranging between 0 to 1
         '''
         max=0
-        if(self.calculate_similarity_score(str_a,str_b)>max):
+        if self.calculate_similarity_score(str_a, str_b)>max:
             max = self.calculate_similarity_score(str_a,str_b)
         eng_part = self.ce_translator.translate(str_b)
         ch_part = self.ce_translator.translate(str_a)
         seg_list = eng_part.split(" ")
         for i in seg_list:
-            if(self.calculate_similarity_score(ch_part,i)>max):
+            if self.calculate_similarity_score(str_a, i)>max:
+                max = self.calculate_similarity_score(str_a,i)
+            if self.calculate_similarity_score(ch_part,i)>max:
                 max = self.calculate_similarity_score(ch_part,i)
         return max
 
@@ -91,9 +93,6 @@ class Translation:
 
         return {name: score for (score, name) in poss_names}
 
-
-
-            
 
 def main(defvals=None):
     names = ["泰勒斯威夫特", "蕾哈娜", "酷玩", "贾斯汀比伯", "恩雅", "老鹰", "林肯公园","拉里伯德"]
