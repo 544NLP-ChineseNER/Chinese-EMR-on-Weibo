@@ -1,4 +1,4 @@
-#import jieba
+import jieba
 
 
 class NicknameGeneration:
