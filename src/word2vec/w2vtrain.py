@@ -144,5 +144,5 @@ if __name__ == '__main__':
     # t.wiki_xml_to_txt()
     # t.trad_to_simp()
     # t.tokenize(inp = os.path.join(t.output_path,'wiki.zh.text.simplified'))
-    t.continue_train(os.path.join(t.output_path,'morph.dat'))
+    t.continue_train(os.path.join(t.output_path,'news.dat'))
     # t.train(os.path.join(t.output_path, 'news.dat'))

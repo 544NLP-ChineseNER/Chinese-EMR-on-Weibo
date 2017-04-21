@@ -58,21 +58,22 @@ class Characteristic:
         :return: (list) a list of possible objects of the morph
         '''
         names = []
-        res = []
+        res = {}
         try:
-            names = self.model.similar_by_word(word, topn=10)
+            names = self.model.similar_by_word(morph, topn=10)
         except KeyError as e:
             self.logger.error(e)
         for name in names:
-            print(name[0], ' ', name[1])
-            res += [name[0]]
+            res[name[0]] = name[1]
+        print(res)
         return res
 
 
 if __name__ == '__main__':
     c = Characteristic()
     c.load_model()
-    query = "小巨人" #O'Neal
-    query2 = "姚明" #Kobe
+    query = "波什" #O'Neal
+    query2 = "龙王" #Kobe
+    c.get_similar_names(query)
     c.get_related(query,20)
     c.get_similarity_score(query,query2)

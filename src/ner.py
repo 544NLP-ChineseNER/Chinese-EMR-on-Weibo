@@ -10,8 +10,8 @@ class ChineseNER:
         self.model_path = os.path.join(config.NER_ROOT, 'classifiers/chinese.misc.distsim.crf.ser.gz')
         self.ner_jar_path = os.path.join(config.NER_ROOT, 'stanford-ner.jar')
         self.ner = StanfordNERTagger(self.model_path, self.ner_jar_path)
-        # self.logger = logging.Logger('ner')
-        self.logger = kwargs['logger']
+        self.logger = logging.Logger('ner')
+        # self.logger = kwargs['logger']
         self.CLASS = ['LOCATION', 'PERSON', 'ORGANIZATION', 'MISC', 'MONEY', 'PERCENT', 'DATE', 'TIME']
         pass
 
