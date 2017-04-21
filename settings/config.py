@@ -2,7 +2,7 @@
 import os
 
 
-DEBUG = True
+DEBUG = False
 
 # LOG_LEVEL:
 # |-- 0 - Only record error messages;

@@ -3,11 +3,12 @@ import os
 
 from settings import config
 
+
 class NicknameGeneration:
     stopwords = ["阿", "哥", "姐", "弟", "爷", "叔", "姑", "婆", "大", "小", "老", "太"]
 
-    def __init__(self, nickname):
-        self.nickname = nickname
+    def __init__(self, *args, **kwargs):
+        pass
 
     def calculate_similarity_score(self, str_a, str_b):
         '''
@@ -85,22 +86,36 @@ class NicknameGeneration:
                 max_likelihood = p
         return result
 
-    def nickname_generation(self):
+    def nickname_generation(self, _name):
         with open(os.path.join(config.DICT_ROOT, "celebrity.txt"), "r", encoding='UTF-8')as infile:
             data = infile.read()
         line = data.splitlines()
         name_entity = []
         for l in line:
-            for index in self.nickname:
+            for index in _name:
                 if index in l and index not in self.stopwords and l not in name_entity:
                     name_entity.append(l)
         return name_entity
 
+    def get_similar_names(self, _name):
+        '''
+        Generate possible name for a specific morph
+        :param _name: (String) morph
+        :return: ()
+        '''
+        name_entity = self.nickname_generation(_name)
+        prior, likelihood = self.nb_learn(os.path.join(config.DICT_ROOT, "morph-entity.txt"))
+
+        # TODO(pwwp):
+        # Currently this method returns a string as possible name for a morph
+        # Change it to Dict{<name>: <confidence_score>, <name>: <confidence_score>}
+
+        result = self.nb_classify(name_entity, _name, prior, likelihood)
+        return result
+
+
 if __name__ == '__main__':
     morph = '涛涛'
-    nick = NicknameGeneration(morph)
-    name_entity = nick.nickname_generation()
-    prior, likelihood = nick.nb_learn(os.path.join(config.DICT_ROOT, "morph-entity.txt"))
-    result = nick.nb_classify(name_entity, morph, prior, likelihood)
-    print(result)
+    nick = NicknameGeneration()
+    print(nick.get_similar_names(morph))
 

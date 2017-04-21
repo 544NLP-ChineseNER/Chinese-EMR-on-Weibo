@@ -13,7 +13,9 @@ class SpellingDecomposition:
 
         self.name_list = kwargs.get('name_list', None)
         if self.name_list is None:
-            self.logger.warning("name_list is not provided when initialing Spelling Decomposition")
+            self.logger.warning("name_list is not provided when initialing Spelling Decomposition. "
+                                "Use default dict instead.")
+
 
         self.decomposition_dict, self.inverse_decomposition_dict = {}, {}
         # Read decomposition dict
