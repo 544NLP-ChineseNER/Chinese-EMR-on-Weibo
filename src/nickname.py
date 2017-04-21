@@ -97,6 +97,21 @@ class NicknameGeneration:
                     name_entity.append(l)
         return name_entity
 
+    def find_amount(self, name, morph, file):
+        with open(file, "r", encoding='UTF-8') as inFile:
+            data = inFile.read()
+        line = data.splitlines()
+        name_num = 0.0
+        morph_num = 0.0
+        for l in line:
+            wordlist = l.split(' ')
+            if wordlist[0] == morph and wordlist[1] != name:
+                morph_num += 1
+            elif wordlist[0] == morph and wordlist[1] == name:
+                name_num += 1
+                morph_num += 1
+        return name_num, morph_num
+
     def get_similar_names(self, _name):
         '''
         Generate possible name for a specific morph
@@ -104,6 +119,8 @@ class NicknameGeneration:
         :return: ()
         '''
         name_entity = self.nickname_generation(_name)
+        #print(name_entity)
+        #print(len(name_entity))
         prior, likelihood = self.nb_learn(os.path.join(config.DICT_ROOT, "morph-entity.txt"))
 
         # TODO(pwwp):
@@ -111,11 +128,20 @@ class NicknameGeneration:
         # Change it to Dict{<name>: <confidence_score>, <name>: <confidence_score>}
 
         result = self.nb_classify(name_entity, _name, prior, likelihood)
-        return result
+        result_num, morph_num = self.find_amount(result, morph, os.path.join(config.DICT_ROOT, "morph-entity.txt"))
+        if 2*result_num <= len(name_entity) < 10*result_num:
+            confidence_score = result_num/(morph_num + len(name_entity)/10.0)
+        elif len(name_entity) < 2*result_num:
+            confidence_score = result_num / (morph_num + len(name_entity)/3.0)
+        else:
+            confidence_score = result_num / (morph_num + len(name_entity) / 50.0)
+        result_dict = {}
+        result_dict[result] = result_dict.get(result, 0.0)
+        result_dict[result] = confidence_score
+        return result_dict
 
 
 if __name__ == '__main__':
-    morph = '涛涛'
+    morph = '赫赫'
     nick = NicknameGeneration()
     print(nick.get_similar_names(morph))
-
