@@ -129,6 +129,8 @@ class NicknameGeneration:
 
         result = self.nb_classify(name_entity, _name, prior, likelihood)
         result_num, morph_num = self.find_amount(result, morph, os.path.join(config.DICT_ROOT, "morph-entity.txt"))
+        if result_num == 0:
+            return 1.0/(len(name_entity)+1)
         if 2*result_num <= len(name_entity) < 10*result_num:
             confidence_score = result_num/(morph_num + len(name_entity)/10.0)
         elif len(name_entity) < 2*result_num:
