@@ -1,5 +1,4 @@
  #-*- coding: UTF-8 -*-   
-from translate import Translator
 import heapq
 from urllib.request import urlopen,quote
 import json
@@ -63,14 +62,17 @@ class Translation:
         #ch_part = Translator(from_lang="zh",to_lang="en").translate(str_a)
         eng_part = json.loads(urlopen(self.set_url(str_b)).read().decode("utf-8").encode("utf-8"))['translation'][0]
         ch_part = json.loads(urlopen(self.set_url(str_a)).read().decode("utf-8").encode("utf-8"))['translation'][0]
-        if(self.calculate_similarity_score(str_a,str_b)>max):
-            max = self.calculate_similarity_score(str_a,str_b)
+
+        if(self.calculate_similarity_score(eng_part,ch_part)>max):
+            max = self.calculate_similarity_score(eng_part,ch_part)
 
         seg_list = eng_part.split(" ")
         for i in seg_list:
             if(self.calculate_similarity_score(ch_part,i)>max):
                 max = self.calculate_similarity_score(ch_part,i)
         return max
+
+        #return self.calculate_similarity_score(eng_part,ch_part)
 
     def get_similar_names(self, name):
         '''
@@ -105,8 +107,10 @@ def main(defvals=None):
     #print(name)
     #result = urlopen("http://fanyi.youdao.com/openapi.do?keyfrom=csci544project&key=1099532634&type=data&doctype=json&version=1.1&q="+name).read().decode("utf-8").encode("utf-8")
     #print(json.loads(result)['translation'][0])
-    print(l.get_similar_names("鸟儿"))
-    #print(l.get_similarity_score("鸟儿","拉里伯德"))
+    #print(l.get_similar_names("鸟儿"))
+    #print(l.get_similarity_score("鸟","拉里伯德"))
+    #print(l.calculate_similarity_score("larry bird","the bird"))
+    #print(json.loads(urlopen(l.set_url("拉里伯德")).read().decode("utf-8").encode("utf-8"))['translation'][0])
     #print(l.ce_translator.translate("伯德"))
     #print(Translator(from_lang="zh",to_lang="en").translate("伯德"))
         
