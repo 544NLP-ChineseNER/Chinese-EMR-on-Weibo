@@ -31,6 +31,7 @@ class TweetNameExtractor:
         html_soup = BeautifulSoup(self.webpage_driver.page_source)
         [s.extract() for s in html_soup(['style', 'script', '[document]', 'head', 'title'])]
         visible_text = html_soup.getText()
+        self.webpage_driver.close()
 
         return visible_text
 
@@ -41,10 +42,8 @@ class TweetNameExtractor:
         :return: List[String]: a list of names extracted from string s
                 Return an empty list if nothing was found
         '''
-        res = []
-        print(s)
         words = jieba.analyse.extract_tags(s, allowPOS=['nr'])
-        return res
+        return words
 
     def extract_names(self, tweet):
         '''
@@ -53,7 +52,7 @@ class TweetNameExtractor:
         :return: List[String] a list of names
                 Return an empty list of no name was found
         '''
-        result = []
+        result = set()
 
         # Try to see if the tweet has tiny urls
         # If it has, try extracting names from the corresponding page
@@ -61,14 +60,14 @@ class TweetNameExtractor:
         for url in urls:
             page_text = self._extract_text_from_page(url)
             names_in_page = self._extract_names_from_string(page_text)
-            result += names_in_page
+            result.update(names_in_page)
 
         # Try to extract names from the tweet itself
-        result += self._extract_names_from_string(tweet)
+        result.update(self._extract_names_from_string(tweet) + [])
 
-        return result
+        return list(result)
 
 
 if __name__ == '__main__':
     name_extractor = TweetNameExtractor()
-    name_extractor.extract_names("这个很赞～ 当爷新单 强势来袭:http://t.cn/R2cnKqK")
+    print(name_extractor.extract_names("2015-04-18 19:12:56 逗!小贝突然入镜砸儿子场子- 手机新浪网 http://t.cn/RAp34D2"))
