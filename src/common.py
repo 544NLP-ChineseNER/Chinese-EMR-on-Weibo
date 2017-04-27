@@ -47,3 +47,34 @@ def build_re():
 CN_CHAR_REGEX = build_re()
 
 # -------------------- End ------------------------
+
+URL_REGEX = re.compile(r"(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-z]{2,6}\b[-a-zA-Z0-9@:%_\+.~#?&//=]*)")
+# Courtset of Daveo
+# Reference: http://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
+
+def extract_tiny_url_from_string(s):
+    '''
+    Extract tiny url from a string.
+    :param s: (String) a string with or without url
+    :return: List[String] A list of urls
+            Example: ["http://www.google.com", "http://t.cn/JustKidding"]
+            If not url was found, returns an empty list.
+    '''
+    match_result = URL_REGEX.findall(s)
+    return [p[0] for p in match_result]
+
+
+
+def test_visible(element):
+    '''
+    Judge if an element is visible to end-user
+    :param element: (BeautifulSoup object) souped page
+    :return: True if element is visible, False otherwise
+    '''
+    # Filter out scripts, stylesheets and other tags not showing on page
+    if element.parent.name in ['style', 'script', '[document]', 'head', 'title']:
+        return False
+    # Filter out commented elements
+    elif re.match('<!--.*-->', str(element.encode('utf-8'))):
+        return False
+    return True
