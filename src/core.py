@@ -43,7 +43,7 @@ class EMRecognition:
         for _class in self.recognition_classes:
             class_name = _class.__name__
             self.recognition_modules[class_name] = {
-                'object': _class(*args,  **kwargs),
+                'instance': _class(*args,  **kwargs),
                 'confidence': 1.0
             }
 
@@ -55,28 +55,33 @@ class EMRecognition:
         '''
         Extract name entity morphs from a tweet.
         :param tweet: (String) content of the tweet(weibo)
-        :return: (Two dimensional array) [[<String>, <float>], ...]
-                Explanation: [[<morph>, <confidence>], [<morph>, <confidence>], ...]
-                Every inner array has two components, a string and a float number.
-                The string represents possible name morphs;
-                The float number represents confidence calculate by our model.
+        :return: (Dict) {
+                            <String> : [(String, float) {5}],
+                            <String> : [(String, float) {5}],
+                            ...
+                        }
+                Explanation:
+                        {
+                            <morph> : [0-5 * (<name>, <confidence_score>)],
+                            <morph> : [0-5 * (<name>, <confidence_score>)],
+                        }
+                A tweet may have multiple morphs, thus we use a dictionary to store
+                possible names for every morph.
         '''
 
-        # Extract names from tweet:
-        names_to_identify = self.ner_module.extract_name_entities_from_sentence(tweet)
-        #names_to_identify = ["李月月鸟", "海涛", "泰勒十万伏特", "日日"]
+        # Extract morphs from tweet:
+        extrated_morphs = self.ner_module.extract_name_entities_from_sentence(tweet)
 
         # Recognize with every method and generate a list of
         # possible names from each method
-
         results = {}
-        for n in names_to_identify:
-            results[n] = {}
+        for morph in extrated_morphs:
+            results[morph] = {}
             for module_name in self.recognition_modules:
-                module = self.recognition_modules[module_name]['object']
-                results[n][module_name] = module.get_similar_names(n)
+                module = self.recognition_modules[module_name]['instance']
+                results[morph][module_name] = module.get_similar_names(morph)
 
-        print(results)
+
 
 
 if __name__ == '__main__':
