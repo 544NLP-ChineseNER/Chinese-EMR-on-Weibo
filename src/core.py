@@ -1,4 +1,5 @@
 import os
+import re
 import heapq
 
 from settings import config
@@ -6,7 +7,7 @@ from src.common import CN_CHAR_REGEX
 from src.logger import Logger
 
 from src.ner import ChineseNER
-from src.characteristic import Characteristic
+#from src.characteristic import Characteristic
 from src.nickname import NicknameGeneration
 from src.phonetic_substitution import PhoneticSubstitution
 from src.spelling_decomposition import SpellingDecomposition
@@ -21,7 +22,7 @@ class EMRecognition:
         '''
 
         '''Recognition_modules stores classes of every method for EMR recognition'''
-        self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition, Translation, Characteristic]
+        self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition, Translation]
 
         ''' recognition_objects stores instances of every module as
             {<module_name>: ['object': <module_object>, 'confidence': <float>], ...}'''
@@ -74,17 +75,24 @@ class EMRecognition:
         '''
 
         # Extract morphs from tweet:
-        extrated_morphs = self.ner_module.extract_name_entities_from_sentence(tweet)
+        extracted_morphs = self.ner_module.extract_name_entities_from_sentence(tweet)
+        extracted_morphs = filter(lambda x: re.match(r"^[0-9]+$", x) is None, extracted_morphs)
 
+        self.logger.info("Morphs: " + " ".join(extracted_morphs))
         # Recognize with every method and generate a list of
         # possible names from each method
         candidate_lists = {}
         results = {}
-        for morph in extrated_morphs:
+        for morph in extracted_morphs:
             results[morph] = {}
             for module_name in self.recognition_modules:
                 module = self.recognition_modules[module_name]['instance']
-                results[morph][module_name] = module.get_similar_names(morph)
+                try:
+                    results[morph][module_name] = module.get_similar_names(morph)
+                except Exception as e:
+                    self.logger.warning("[Core] %s raised an exception. %s." % (module_name, str(e)))
+                    results[morph][module_name] = {}
+
             morph_result = self.combine_results(morph, results[morph])
             candidate_lists[morph] = list(morph_result.keys())
         return candidate_lists

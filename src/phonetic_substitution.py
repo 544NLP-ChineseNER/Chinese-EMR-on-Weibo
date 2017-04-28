@@ -85,6 +85,8 @@ class PhoneticSubstitution:
         self.similar_phones = {"SX", "JK", "LR", "IY", "FW", "MN"}
         self.ignore_phones = {"R", "Y"}
 
+        self.ignore_characters = ["哥","老","小","妈","爸","姐", "爷", "大", "小"]
+
         self.similarity_score_lower_bound = 0.75
 
     def _phone_edit_distance(self, str_a, str_b):
@@ -204,6 +206,10 @@ class PhoneticSubstitution:
             return
 
         self.logger.info("[Phonetic] Checking for: " + str(_name))
+
+        # Filter out ignored words
+        for w in self.ignore_characters:
+            _name = _name.replace(w, "")
 
         # Use heap to store names with the highest score
         top_names = []
