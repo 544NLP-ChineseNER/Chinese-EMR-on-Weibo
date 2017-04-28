@@ -148,6 +148,6 @@ class NicknameGeneration:
 
 
 if __name__ == '__main__':
-    morph = '赫赫'
+    morph = '大鹏'
     nick = NicknameGeneration()
     print(nick.get_similar_names(morph))
