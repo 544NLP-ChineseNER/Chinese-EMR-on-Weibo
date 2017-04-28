@@ -1,4 +1,4 @@
-#import jieba
+import jieba
 import os
 
 from settings import config
