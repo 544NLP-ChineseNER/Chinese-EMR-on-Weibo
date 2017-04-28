@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 from nltk.tag import StanfordNERTagger
 from settings import config
-import logging
 import os
 import jieba
 import jieba.posseg as pseg
-import codecs
+from src.logger import EmptyLogger
 
 def load_stop_list():
     stoplist = []
-    with codecs.open(os.path.join(config.NER_ROOT,'stoplist.txt'),'r','utf-8') as f:
+    with open(os.path.join(config.NER_ROOT,'stoplist.txt'),'r',encoding = 'utf-8') as f:
         lines = f.readlines()
         for line in lines:
             line = line.rstrip().split(' ')[0]
@@ -22,13 +21,15 @@ class ChineseNER:
         self.model_path = os.path.join(config.NER_ROOT, 'classifiers/chinese.misc.distsim.crf.ser.gz')
         self.ner_jar_path = os.path.join(config.NER_ROOT, 'stanford-ner.jar')
         self.ner = StanfordNERTagger(self.model_path, self.ner_jar_path)
-        self.logger = logging.Logger('ner')
-        # self.logger = kwargs['logger']
+        try:
+            self.logger = kwargs['logger']
+        except KeyError as e:
+            self.logger = EmptyLogger()
         self.CLASS = ['LOCATION', 'PERSON', 'ORGANIZATION', 'MISC', 'MONEY', 'PERCENT', 'DATE', 'TIME']
         self.PATTERNS = ['_n_n_nr', '_b_nr_d', '_nr_s', '_n_s', '_a_nr_c', '_a_nr_v', '_nr_a_t', '_n_l',\
          '_a_ng_y', '_nrt_uj', '_nr_d', '_m_ns_x', '_a_n_d', '_ns_nrt_x', '_nr_v', '_n_c', '_nr_uj', \
          '_nr_a', '_nr_m', '_nrt_x', '_j_n_zg', '_r_n_c', '_a_ng_x', '_nr_n_uj', '_g_ng_n_c', '_nrt_p', \
-         '_g_ng_n_v', '_a_n_nr', '_nr_n_v', '_nr_n', '_n_r', '_nrt_x_nr_d', '_nr_l', '_nr_r']
+         '_g_ng_n_v', '_a_n_nr', '_nr_n_v', '_nr_n', '_n_r', '_nrt_x_nr_d', '_nr_l', '_nr_r','_nr_n_r']
         self.stoplist = load_stop_list()
 
     def extract_from_list(self, l):
@@ -63,6 +64,7 @@ class ChineseNER:
                patterns:    pos patterns to match
         :return:    (List[String]) morphs extracted from sentence
         '''
+        self.logger.info("[NER] Extracting morph from: %s" %s)
         words = pseg.cut(s)
         tag_seg = ""
         word_list = []
@@ -72,18 +74,22 @@ class ChineseNER:
             word_list += [word]
         for pattern in self.PATTERNS:
             temp = self.match(pattern,tag_seg,word_list)
-            # print(temp)
             res += temp
+        self.logger.info("[NER] Results: %s" %str(set(res)))
         return list(set(res))
 
     def match(self,pattern,tag_seg,word_list):
         '''
         match pattern in tag_seg and return matched word list
+        :param pattern: (String) pos pattern eg: _n_n_nr
+        :param tag_seg: (String) tag sequence to match eg: _n_n_n_n_n_nr
+        :param word_list: (List<String>) word list of tag sequence
+        :return: (List<String>) matched word list
         '''
         res = []
         wIndex = 0
         pattern_tag_count = len(pattern.split("_")) - 1
-        # print(pattern)
+        self.logger.info("[NER] Pattern:%s" %pattern)
         while tag_seg.find(pattern) >=0:
             front = tag_seg.find(pattern)
             wIndex += len(tag_seg[:front].split("_")) - 1
@@ -91,17 +97,18 @@ class ChineseNER:
             morph = ""
             for i in range(wIndex,wIndex+pattern_tag_count-1):
                 morph += word_list[i]
-            if len(morph) in [2,3] and morph not in self.stoplist:
+            if len(morph) in [2,3,4] and morph not in self.stoplist:
                 res += [morph]
             wIndex += pattern_tag_count
             tag_seg = tag_seg[(front+len(pattern)):]
-            # print(tag_seg)
-            # print(tag_seg.find(pattern))
+        self.logger.info("[NER] Pattern results: %s" %str(res))
         return res
 
     def list_pos(self,s):
         '''
         list pos of all words in a sentence
+        :param s: (String) sentence
+        :return: none
         '''
         words = pseg.cut(s)
         for word, tag in words:

@@ -1,25 +1,18 @@
 from gensim.models import Word2Vec
-import logging
 import os
 from settings.config import WORD2VEC_ROOT
-import jieba.posseg as pseg
+from src.logger import Logger, EmptyLogger
 
-def load_stop_list():
-    stoplist = []
-    with codecs.open('stoplist.txt','r','utf-8') as f:
-        lines = f.readlines()
-        for line in lines:
-            line = line.rstrip().split(' ')[0]
-            stoplist += [line]
-        f.close()
-    return stoplist
-    
 class Characteristic:
 
     def __init__(self, *args, **kwargs):
+        try:
+            self.logger = kwargs['logger']
+        except KeyError as e:
+            self.logger = EmptyLogger()
         # self.logger = kwargs['logger']
+        print(self.logger)
         self.model = None
-        self.logger = logging.Logger('characteristic')
         self.load_model()
 
     def load_model(self):
@@ -28,7 +21,9 @@ class Characteristic:
         :return:
         '''
         try:
+            self.logger.info("[Characteristic] Loading word2vec model")
             self.model = Word2Vec.load(os.path.join(WORD2VEC_ROOT,'news.word2vec.model'))
+            self.logger.info("[Characteristic] Loading completed")
         except FileNotFoundError as e:
             self.logger.error(e)
             raise
@@ -43,7 +38,7 @@ class Characteristic:
         '''
         try:
             similarity = self.model.wv.similarity(w1,w2)
-            print(w1,w2,'similarity:',similarity)
+            self.logger.info("[Characteristic] %s %s similarity: %f" %(w1,w2,similarity))
             return similarity
         except KeyError as e:
             self.logger.error(e)
@@ -55,6 +50,7 @@ class Characteristic:
         '''
         names = []
         try:
+            self.logger.info("[Characteristic] %d related words of %s are as follows:" %(N,word))
             names = self.model.similar_by_word(word, topn=N)
         except KeyError as e:
             self.logger.error(e)
@@ -71,18 +67,18 @@ class Characteristic:
         names = []
         res = {}
         try:
+            self.logger.info("[Characteristic] Extacting possible name entities of: %s" %morph)
             names = self.model.similar_by_word(morph, topn=10)
         except KeyError as e:
             self.logger.error(e)
         for name in names:
             res[name[0]] = name[1]
-        print(res)
+        self.logger.info("[Characteristic] Possible name entities of %s are \n %s" %(morph,str(res)))
         return res
 
 
 if __name__ == '__main__':
     c = Characteristic()
-    c.load_model()
     query = "波什" #O'Neal
     query2 = "龙王" #Kobe
     c.get_similar_names(query)
