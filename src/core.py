@@ -61,7 +61,7 @@ class EMRecognition:
                 'confidence': 1.0
             }
 
-        self.ner_module = ChineseNER()
+        self.ner_module = ChineseNER(args,kwargs)
 
         pass
 
