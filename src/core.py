@@ -6,7 +6,6 @@ from src.common import CN_CHAR_REGEX
 from src.logger import Logger
 
 from src.ner import ChineseNER
-from src.characteristic import Characteristic
 from src.nickname import NicknameGeneration
 from src.phonetic_substitution import PhoneticSubstitution
 from src.spelling_decomposition import SpellingDecomposition
@@ -21,15 +20,14 @@ class EMRecognition:
         '''
 
         '''Recognition_modules stores classes of every method for EMR recognition'''
-        self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition,Translation, Characteristic]
-        #self.recognition_classes = [PhoneticSubstitution, SpellingDecomposition]
+        self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition,Translation]
 
         ''' recognition_objects stores instances of every module as
             {<module_name>: ['object': <module_object>, 'confidence': <float>], ...}'''
         self.recognition_modules = {}
 
         ''' logger prints and stores log files and is passed on to every instance'''
-        self.logger = Logger()
+        logger = Logger()
 
         # Load a dictionary with all celebrities' names
         known_name_list = []
@@ -40,13 +38,12 @@ class EMRecognition:
         args = []
 
         kwargs = {
-            'logger': self.logger,
+            'logger': logger,
             'name_list': known_name_list,
         }
 
         for _class in self.recognition_classes:
             class_name = _class.__name__
-            self.logger.info("[Core] Initializing module " + class_name)
             self.recognition_modules[class_name] = {
                 'instance': _class(*args,  **kwargs),
                 'confidence': 1.0
@@ -76,29 +73,31 @@ class EMRecognition:
 
         # Extract morphs from tweet:
         extrated_morphs = self.ner_module.extract_name_entities_from_sentence(tweet)
-        extracted_morphs = []
 
         # Recognize with every method and generate a list of
         # possible names from each method
+        candidate_lists = {}
         results = {}
         for morph in extrated_morphs:
             results[morph] = {}
             for module_name in self.recognition_modules:
                 module = self.recognition_modules[module_name]['instance']
                 results[morph][module_name] = module.get_similar_names(morph)
-
+            morph_result = self.combine_results(morph, results[morph])
+            candidate_lists[morph] = list(morph_result.keys());
+        return candidate_lists
 
 
     def combine_results(self,morph,morph_result):
         '''
         Get final score of possible entity names combining all methods
         :param morph: (string) morph computing
-        :param morph_result: (dict) entity-confidence score pairs of each module (result[morph] in )
+        :param morph_result: (dict) entity-confidence score pairs of each module (result[morph] in recognize_tweet)
         :return: (Dict) {
                             <String> : [(float) {5}],
                             <String> : [(float) {5}],
                             ...
-                        }recognize_tweet
+                        }
                 Explanation:
                         {
                             <name> : [0-5 * <confidence_score>],
@@ -106,7 +105,7 @@ class EMRecognition:
                         }
         '''
         result = []
-        prior,prob = self.train_nbmodel()
+        prob,prior = self.train_nbmodel()
         for module in morph_result:
             probability = prior[module]
             if morph in prob:
@@ -116,17 +115,14 @@ class EMRecognition:
                 heapq.heappush(result,(new_score,candidate))
 
             result = sorted(result, key=lambda x: x[0], reverse=True)
-
-        self.logger.info("[Core] Final Result : " + str(result))
-
-        return {name: score for (score,name) in result}
+        return {name: score for (score,name) in result[:5]}
 
 
     def train_nbmodel(self):
         pri = {}
         total_size = 0
         pro = {}
-        with open(os.path.join(config.DICT_ROOT, "method_classification.txt"), encoding='utf-8') as f:
+        with open("method_classification.txt","r", encoding='utf-8') as f:
             for line in f:
                 data = line.strip().split(" ")
                 classes = data[1].split(",")
@@ -150,6 +146,7 @@ class EMRecognition:
 if __name__ == '__main__':
     emr = EMRecognition()
     emr.recognize_tweet("这是就是一个测试而已")
+    #print(EMRecognition.train_nbmodel())
 
     # names = set()
     # with open(os.path.join(config.DICT_ROOT, "celebrity.txt"), encoding="utf-8") as f:
