@@ -56,7 +56,7 @@ class ChineseNER:
 
         return res
 
-    def extract_morph(self,s,patterns):
+    def extract_morph(self,s):
         '''
         Extract morph from a sentence by pos patterns
         :param s:  (UTF-8 or Unicode String) sentence text in Chinese
@@ -70,7 +70,7 @@ class ChineseNER:
         for word, tag in words:
             tag_seg += "_" + tag
             word_list += [word]
-        for pattern in patterns:
+        for pattern in self.PATTERNS:
             temp = self.match(pattern,tag_seg,word_list)
             # print(temp)
             res += temp
@@ -116,4 +116,4 @@ if __name__ == '__main__':
     ner = ChineseNER()
     # print(ner.extract_name_entities_from_sentence(s))
     ner.list_pos(s)
-    print(ner.extract_morph(s,patterns))
+    print(ner.extract_morph(s))
