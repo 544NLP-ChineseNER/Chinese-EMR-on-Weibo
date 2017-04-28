@@ -6,6 +6,7 @@ from src.common import CN_CHAR_REGEX
 from src.logger import Logger
 
 from src.ner import ChineseNER
+from src.characteristic import Characteristic
 from src.nickname import NicknameGeneration
 from src.phonetic_substitution import PhoneticSubstitution
 from src.spelling_decomposition import SpellingDecomposition
@@ -20,8 +21,8 @@ class EMRecognition:
         '''
 
         '''Recognition_modules stores classes of every method for EMR recognition'''
-        #self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition,Translation]
-        self.recognition_classes = [PhoneticSubstitution, SpellingDecomposition]
+        self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition,Translation, Characteristic]
+        #self.recognition_classes = [PhoneticSubstitution, SpellingDecomposition]
 
         ''' recognition_objects stores instances of every module as
             {<module_name>: ['object': <module_object>, 'confidence': <float>], ...}'''

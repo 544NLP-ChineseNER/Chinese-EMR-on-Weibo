@@ -48,7 +48,8 @@ if __name__ == '__main__':
                 continue
 
             for morph in result:
-                result_names = [_name for (_name, score) in result[morph]]
+                #result_names = [_name for (_name, score) in result[morph]]
+                result_names = result[morph]
                 if morph in line_answers:
                     if line_answers[morph] in result_names:
                         dbg_print("\tCorrect answer: %s." % morph, file=log_file_handler)
