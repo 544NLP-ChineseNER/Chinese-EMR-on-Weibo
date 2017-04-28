@@ -50,7 +50,8 @@ if __name__ == '__main__':
             for morph in result:
                 #result_names = [_name for (_name, score) in result[morph]]
                 result_names = result[morph]
-                dbg_print("Results: " + " ".join(result_names))
+                dbg_print("\tMorph: " + morph, file=log_file_handler)
+                dbg_print("\tResults: " + " ".join(result_names), file=log_file_handler)
                 if morph in line_answers:
                     if line_answers[morph] in result_names:
                         dbg_print("\tCorrect answer: %s." % morph, file=log_file_handler)
@@ -79,3 +80,5 @@ if __name__ == '__main__':
     dbg_print("Wrong morph: %s" % str(wrong_morph_count), file=log_file_handler)
     dbg_print("Missed morph: %s" % str(missed_morph_count), file=log_file_handler)
     dbg_print("--------------------------------------------------")
+
+    log_file_handler.close()
