@@ -65,7 +65,7 @@ if __name__ == '__main__':
                     dbg_print("\tWrong morph: %s ." % (
                         morph
                     ), file=log_file_handler)
-                    correct_morph_wrong_name_count += 1
+                    wrong_morph_count += 1
 
             for ans in line_answers:
                 if ans not in result:
