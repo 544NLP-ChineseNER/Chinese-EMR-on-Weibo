@@ -9,6 +9,7 @@ from src.nickname import NicknameGeneration
 from src.phonetic_substitution import PhoneticSubstitution
 from src.spelling_decomposition import SpellingDecomposition
 from src.translation_and_transliteration import Translation
+from src.tweet_name_extraction import TweetNameExtractor
 
 
 class EMRecognition:
@@ -47,7 +48,7 @@ class EMRecognition:
                 'confidence': 1.0
             }
 
-        #self.ner_module = ChineseNER()
+        self.ner_module = ChineseNER()
 
         pass
 
@@ -98,5 +99,3 @@ if __name__ == '__main__':
     #     new_file.write(n)
     #
     # new_file.close()
-
-
