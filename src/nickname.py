@@ -1,4 +1,4 @@
-import jieba
+#import jieba
 import os
 
 from settings import config
@@ -148,6 +148,6 @@ class NicknameGeneration:
 
 
 if __name__ == '__main__':
-    morph = '大鹏'
+    morph = '赫赫'
     nick = NicknameGeneration()
     print(nick.get_similar_names(morph))
