@@ -35,7 +35,9 @@ class ChineseNER:
         self.PATTERNS = ['_n_n_nr', '_b_nr_d', '_nr_s', '_n_s', '_a_nr_c', '_a_nr_v', '_nr_a_t', '_n_l',\
          '_a_ng_y', '_nrt_uj', '_nr_d', '_m_ns_x', '_a_n_d', '_ns_nrt_x', '_nr_v', '_n_c', '_nr_uj', \
          '_nr_a', '_nr_m', '_nrt_x', '_j_n_zg', '_r_n_c', '_a_ng_x', '_nr_n_uj', '_g_ng_n_c', '_nrt_p', \
-         '_g_ng_n_v', '_a_n_nr', '_nr_n_v', '_nr_n', '_n_r', '_nrt_x_nr_d', '_nr_l', '_nr_r','_nr_n_r','_nr_tg']
+         '_g_ng_n_v', '_a_n_nr', '_nr_n_v', '_nr_n', '_n_r', '_nrt_x_nr_d', '_nr_l', '_nr_r','_nr_n_r','_nr_tg',\
+        '_tg_ns_x','_a_n_y','_nr_n_y','_nr_n_d','_a_n_zg','_nr_y','_n_q_t','_n_q_d','_a_zg_x','_n_nr','_nr_b',\
+        '_q_v_x','_nr_n_x','_a_y_l','_nr_n_p','_nr_n_n','_nr_x','_nr_nr_y','_a_m_uj']
         try:
             self.stoplist = load_stop_list()
         except FileNotFoundError as e:
@@ -126,7 +128,7 @@ class ChineseNER:
 
 if __name__ == '__main__':
     s = "来自中国的小巨人姚明和浓眉哥的对决令人期待。"
-    s = "@何翔 @Action一文  时也命也！詹皇今败无可避免 他留下悲壮伟大"
+    s = "'流行天后Beyonce以5000万美元代言2013年百事广告"
     # s = "我觉得把何老师搞辞职的那位教授的朋友们要斟酌一下自己交的友了"
     # s = "张大仙@张智霖 说：每次吵架我都会想到我失去她会怎样"
     ner = ChineseNER()
