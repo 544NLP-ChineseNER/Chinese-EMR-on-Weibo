@@ -1,8 +1,10 @@
+import datetime
 import os
 
 from settings import config
 from src.core import EMRecognition
 
+NOW = datetime.datetime.now()
 
 def dbg_print(s, file=None):
     print(s)
@@ -10,8 +12,8 @@ def dbg_print(s, file=None):
         print(s, file=file)
 
 if __name__ == '__main__':
-    emr_instance = EMRecognition()
-    log_file_handler = open(os.path.join(config.LOG_ROOT, "test.log"), 'w', encoding="utf-8")
+    emr_instance = EMRecognition(ner_mode=2)
+    log_file_handler = open(os.path.join(config.LOG_ROOT, "test-%s-%s.log" % (NOW.hour, NOW.minute)), 'w', encoding="utf-8")
 
     '''answers: correct name entity for morphs. Each line corresponds to a line of tweet.
         format: [
@@ -34,15 +36,21 @@ if __name__ == '__main__':
     with open("test_data.txt", encoding='utf-8') as test_file_handler:
         line_num = 0
         for line in test_file_handler:
-            result = emr_instance.recognize_tweet(line)
             line_answers = answers[line_num]
+            result = emr_instance.recognize_tweet(line, morphs=line_answers)
 
             dbg_print("[Line %s ] Answer: %s." % (
                 str(line_num),
                 str(answers[line_num])
             ), file=log_file_handler)
 
+            dbg_print("[Line %s] Morphs Extracted: %s" % (
+                str(line_num),
+                ", ".join(result.keys())
+            ), file=log_file_handler)
+
             line_num += 1
+
             if result is None:
                 missed_morph_count += len(line_answers)
                 continue
@@ -74,11 +82,18 @@ if __name__ == '__main__':
                     dbg_print("\tMissed morph: %s" % ans, file=log_file_handler)
                     missed_morph_count += 1
 
-    dbg_print("------------------ Statistics --------------------", file=log_file_handler)
+            dbg_print("-------------- Current Statistics ---------------", file=log_file_handler)
+            dbg_print("Correct: %s" % str(correct_morph_count), file=log_file_handler)
+            dbg_print("Correct morph wrong name: %s" % str(correct_morph_wrong_name_count), file=log_file_handler)
+            dbg_print("Wrong morph: %s" % str(wrong_morph_count), file=log_file_handler)
+            dbg_print("Missed morph: %s" % str(missed_morph_count), file=log_file_handler)
+            dbg_print("--------------------------------------------------", file=log_file_handler)
+
+    dbg_print("-------------- Overall Statistics ----------------", file=log_file_handler)
     dbg_print("Correct: %s" % str(correct_morph_count), file=log_file_handler)
     dbg_print("Correct morph wrong name: %s" % str(correct_morph_wrong_name_count), file=log_file_handler)
     dbg_print("Wrong morph: %s" % str(wrong_morph_count), file=log_file_handler)
     dbg_print("Missed morph: %s" % str(missed_morph_count), file=log_file_handler)
-    dbg_print("--------------------------------------------------")
+    dbg_print("--------------------------------------------------", file=log_file_handler)
 
     log_file_handler.close()
