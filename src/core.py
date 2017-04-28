@@ -110,7 +110,7 @@ class EMRecognition:
                 heapq.heappush(result,(new_score,candidate))
 
             result = sorted(result, key=lambda x: x[0], reverse=True)
-            return {name: score for (score,name) in result}
+        return {name: score for (score,name) in result}
 
 
     def train_nbmodel(self):
