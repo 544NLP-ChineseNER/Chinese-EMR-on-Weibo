@@ -16,7 +16,7 @@ from src.tweet_name_extraction import TweetNameExtractor
 
 
 class EMRecognition:
-    def __init__(self, runtime_config=None):
+    def __init__(self, *args, **kwargs):
         '''
         Starting point for the whole project.
         '''
@@ -30,6 +30,12 @@ class EMRecognition:
 
         ''' logger prints and stores log files and is passed on to every instance'''
         self.logger = Logger()
+
+        '''ner_mode: 0 - Rule Based NER, 1 - Stanford NER, 2 - Given NER List'''
+        self.ner_mode = kwargs.get("ner_mode", 0)
+
+        '''enabled_module: binary '''
+        self.enabled_module = kwargs.get('enabled_module', 31)
 
         # Load a dictionary with all celebrities' names
         known_name_list = []
@@ -56,7 +62,7 @@ class EMRecognition:
 
         pass
 
-    def recognize_tweet(self, tweet):
+    def recognize_tweet(self, tweet, morphs=None):
         '''
         Extract name entity morphs from a tweet.
         :param tweet: (String) content of the tweet(weibo)
@@ -75,8 +81,15 @@ class EMRecognition:
         '''
 
         # Extract morphs from tweet:
-        extracted_morphs = self.ner_module.extract_name_entities_from_sentence(tweet)
-        extracted_morphs = [m for m in extracted_morphs if re.match(r"^[0-9 ,.:]+$", m) is None]
+        extracted_morphs = None
+
+        if self.ner_mode == 0:
+            extracted_morphs = self.ner_module.extract_morph(tweet)
+            extracted_morphs = [m for m in extracted_morphs if re.match(r"^[0-9 ,.:]+$", m) is None]
+        elif self.ner_mode == 1:
+            extracted_morphs = self.ner_module.extract_name_entities_from_sentence(tweet)
+        elif self.ner_mode == 2:
+            extracted_morphs = morphs
 
         self.logger.info("Morphs: " + " ".join(extracted_morphs))
         # Recognize with every method and generate a list of

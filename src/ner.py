@@ -89,7 +89,6 @@ class ChineseNER:
         res = []
         wIndex = 0
         pattern_tag_count = len(pattern.split("_")) - 1
-        self.logger.info("[NER] Pattern:%s" %pattern)
         while tag_seg.find(pattern) >=0:
             front = tag_seg.find(pattern)
             wIndex += len(tag_seg[:front].split("_")) - 1
@@ -101,7 +100,6 @@ class ChineseNER:
                 res += [morph]
             wIndex += pattern_tag_count
             tag_seg = tag_seg[(front+len(pattern)):]
-        self.logger.info("[NER] Pattern results: %s" %str(res))
         return res
 
     def list_pos(self,s):
