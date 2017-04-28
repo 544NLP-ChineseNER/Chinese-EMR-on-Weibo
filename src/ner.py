@@ -79,7 +79,7 @@ class ChineseNER:
             morph = ""
             for i in range(wIndex,wIndex+pattern_tag_count-1):
                 morph += word_list[i]
-            if len(morph <=3)
+            if len(morph) <= 3:
                 res += [morph]
             wIndex += pattern_tag_count
             tag_seg = tag_seg[(front+len(pattern)):]

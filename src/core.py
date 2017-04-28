@@ -100,7 +100,7 @@ class EMRecognition:
                         }
         '''
         result = []
-        prior,prob = self.train_nbmodel();
+        prior,prob = self.train_nbmodel()
         for module in morph_result:
             probability = prior[module]
             if morph in prob:
