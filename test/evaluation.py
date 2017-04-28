@@ -12,8 +12,8 @@ def dbg_print(s, file=None):
         print(s, file=file)
 
 if __name__ == '__main__':
-    emr_instance = EMRecognition(ner_mode=0)
-    log_file_handler = open(os.path.join(config.LOG_ROOT, "test-%s-%s.log" % (NOW.minute, NOW.second)), 'w', encoding="utf-8")
+    emr_instance = EMRecognition(ner_mode=2)
+    log_file_handler = open(os.path.join(config.LOG_ROOT, "test-%s-%s.log" % (NOW.hour, NOW.minute)), 'w', encoding="utf-8")
 
     '''answers: correct name entity for morphs. Each line corresponds to a line of tweet.
         format: [
@@ -36,8 +36,8 @@ if __name__ == '__main__':
     with open("test_data", encoding='utf-8') as test_file_handler:
         line_num = 0
         for line in test_file_handler:
-            result = emr_instance.recognize_tweet(line)
             line_answers = answers[line_num]
+            result = emr_instance.recognize_tweet(line, morphs=line_answers)
 
             dbg_print("[Line %s ] Answer: %s." % (
                 str(line_num),
