@@ -56,12 +56,12 @@ class PhoneticSubstitution:
         self.max_similar_names = kwargs.get('max_similar_names', 5)
 
         try:
-            self.logger = kwargs.get('logger')
-            self.name_list = kwargs.get("name_list")
+            self.logger = kwargs['logger']
+            self.name_list = kwargs["name_list"]
         except KeyError as e:
-            if e == "logger":
+            if e.args[0] == "logger":
                 self.logger = EmptyLogger()
-            elif e == "name_list":
+            elif e.args[0] == "name_list":
                 self.logger.warning(str(e) + " is not provided when initializing PhoneticSubstitution.")
 
         self.logger.info("[Phonetic] Building metaphone dictionary")

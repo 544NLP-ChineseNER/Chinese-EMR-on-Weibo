@@ -52,7 +52,7 @@ class EMRecognition:
                 'confidence': 1.0
             }
 
-        self.ner_module = ChineseNER()
+        self.ner_module = ChineseNER(*args, **kwargs)
 
         pass
 
@@ -75,7 +75,7 @@ class EMRecognition:
         '''
 
         # Extract morphs from tweet:
-        extracted_morphs = self.ner_module.extract_name_entities_from_sentence(tweet)
+        extracted_morphs = self.ner_module.extract_morph(tweet)
         extracted_morphs = [m for m in extracted_morphs if re.match(r"^[0-9 ,.:]+$", m) is None]
 
         self.logger.info("Morphs: " + " ".join(extracted_morphs))

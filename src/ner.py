@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from nltk.tag import StanfordNERTagger
 from settings import config
+from src.logger import EmptyLogger
 import os
 import jieba
 import jieba.posseg as pseg
-from src.logger import EmptyLogger
 
 def load_stop_list():
     stoplist = []
@@ -21,16 +21,25 @@ class ChineseNER:
         self.model_path = os.path.join(config.NER_ROOT, 'classifiers/chinese.misc.distsim.crf.ser.gz')
         self.ner_jar_path = os.path.join(config.NER_ROOT, 'stanford-ner.jar')
         self.ner = StanfordNERTagger(self.model_path, self.ner_jar_path)
+        self.name_list = []
+        self.stoplist = []
         try:
             self.logger = kwargs['logger']
+            self.name_list = kwargs['name_list']
         except KeyError as e:
-            self.logger = EmptyLogger()
+            if e.args[0] == "logger":
+                self.logger = EmptyLogger()
+            elif e.args[0] == "name_list":
+                self.logger.warning(str(e) + "is not provided, will not filter out person")
         self.CLASS = ['LOCATION', 'PERSON', 'ORGANIZATION', 'MISC', 'MONEY', 'PERCENT', 'DATE', 'TIME']
         self.PATTERNS = ['_n_n_nr', '_b_nr_d', '_nr_s', '_n_s', '_a_nr_c', '_a_nr_v', '_nr_a_t', '_n_l',\
          '_a_ng_y', '_nrt_uj', '_nr_d', '_m_ns_x', '_a_n_d', '_ns_nrt_x', '_nr_v', '_n_c', '_nr_uj', \
          '_nr_a', '_nr_m', '_nrt_x', '_j_n_zg', '_r_n_c', '_a_ng_x', '_nr_n_uj', '_g_ng_n_c', '_nrt_p', \
-         '_g_ng_n_v', '_a_n_nr', '_nr_n_v', '_nr_n', '_n_r', '_nrt_x_nr_d', '_nr_l', '_nr_r','_nr_n_r']
-        self.stoplist = load_stop_list()
+         '_g_ng_n_v', '_a_n_nr', '_nr_n_v', '_nr_n', '_n_r', '_nrt_x_nr_d', '_nr_l', '_nr_r','_nr_n_r','_nr_tg']
+        try:
+            self.stoplist = load_stop_list()
+        except FileNotFoundError as e:
+            self.logger.warning(str(e) + "not found, will not filter out stop words")
 
     def extract_from_list(self, l):
         '''
@@ -97,7 +106,7 @@ class ChineseNER:
             morph = ""
             for i in range(wIndex,wIndex+pattern_tag_count-1):
                 morph += word_list[i]
-            if len(morph) in [2,3,4] and morph not in self.stoplist:
+            if len(morph) in [2,3,4] and morph not in self.stoplist and morph not in self.name_list:
                 res += [morph]
             wIndex += pattern_tag_count
             tag_seg = tag_seg[(front+len(pattern)):]
@@ -117,7 +126,7 @@ class ChineseNER:
 
 if __name__ == '__main__':
     s = "来自中国的小巨人姚明和浓眉哥的对决令人期待。"
-    s = "麻雀谢幕啦 谢谢大家的陪伴和支持  不知道再跟大家见面的下部电视剧会是什么时候了 什么样子的了 但我会坚守我自己的信仰 像陈队长一样战斗下去 "
+    s = "@何翔 @Action一文  时也命也！詹皇今败无可避免 他留下悲壮伟大"
     # s = "我觉得把何老师搞辞职的那位教授的朋友们要斟酌一下自己交的友了"
     # s = "张大仙@张智霖 说：每次吵架我都会想到我失去她会怎样"
     ner = ChineseNER()
