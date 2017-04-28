@@ -1,14 +1,12 @@
 import jieba.analyse
-import urllib.request
 from selenium import webdriver
-
 from bs4 import BeautifulSoup
 
 from src.common import extract_tiny_url_from_string, test_visible
 
 class TweetNameExtractor:
     def __init__(self, *args, **kwargs):
-        self.webpage_driver = webdriver.Chrome()
+        self.webpage_driver = webdriver.PhantomJS()
         pass
 
     def _extract_tiny_url(self, string):
@@ -27,7 +25,9 @@ class TweetNameExtractor:
         '''
 
         # Read a page and extract visible text from page
+        self.webpage_driver.implicitly_wait(10)
         self.webpage_driver.get(url)
+
         html_soup = BeautifulSoup(self.webpage_driver.page_source)
         [s.extract() for s in html_soup(['style', 'script', '[document]', 'head', 'title'])]
         visible_text = html_soup.getText()
@@ -42,8 +42,8 @@ class TweetNameExtractor:
         :return: List[String]: a list of names extracted from string s
                 Return an empty list if nothing was found
         '''
-        words = jieba.analyse.extract_tags(s, allowPOS=['nr'])
-        return words
+        names = jieba.analyse.extract_tags(s.strip('\n\t\r'), allowPOS=['nr'])
+        return names
 
     def extract_names(self, tweet):
         '''
@@ -63,11 +63,11 @@ class TweetNameExtractor:
             result.update(names_in_page)
 
         # Try to extract names from the tweet itself
-        result.update(self._extract_names_from_string(tweet) + [])
+        result.update(self._extract_names_from_string(tweet))
 
         return list(result)
 
 
 if __name__ == '__main__':
     name_extractor = TweetNameExtractor()
-    print(name_extractor.extract_names("2015-04-18 19:12:56 逗!小贝突然入镜砸儿子场子- 手机新浪网 http://t.cn/RAp34D2"))
+    print(name_extractor.extract_names("2015-06-03 22:14:33	这个很赞～ 当爷新单 强势来袭:http://t.cn/R2cnKqK (来自@echo"))
