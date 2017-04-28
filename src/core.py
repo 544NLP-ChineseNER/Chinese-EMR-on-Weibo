@@ -20,14 +20,15 @@ class EMRecognition:
         '''
 
         '''Recognition_modules stores classes of every method for EMR recognition'''
-        self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition,Translation]
+        #self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition,Translation]
+        self.recognition_classes = [PhoneticSubstitution, SpellingDecomposition]
 
         ''' recognition_objects stores instances of every module as
             {<module_name>: ['object': <module_object>, 'confidence': <float>], ...}'''
         self.recognition_modules = {}
 
         ''' logger prints and stores log files and is passed on to every instance'''
-        logger = Logger()
+        self.logger = Logger()
 
         # Load a dictionary with all celebrities' names
         known_name_list = []
@@ -38,12 +39,13 @@ class EMRecognition:
         args = []
 
         kwargs = {
-            'logger': logger,
+            'logger': self.logger,
             'name_list': known_name_list,
         }
 
         for _class in self.recognition_classes:
             class_name = _class.__name__
+            self.logger.info("[Core] Initializing module " + class_name)
             self.recognition_modules[class_name] = {
                 'instance': _class(*args,  **kwargs),
                 'confidence': 1.0
@@ -73,6 +75,7 @@ class EMRecognition:
 
         # Extract morphs from tweet:
         extrated_morphs = self.ner_module.extract_name_entities_from_sentence(tweet)
+        extracted_morphs = []
 
         # Recognize with every method and generate a list of
         # possible names from each method
@@ -83,16 +86,18 @@ class EMRecognition:
                 module = self.recognition_modules[module_name]['instance']
                 results[morph][module_name] = module.get_similar_names(morph)
 
+
+
     def combine_results(self,morph,morph_result):
         '''
         Get final score of possible entity names combining all methods
         :param morph: (string) morph computing
-        :param morph_result: (dict) entity-confidence score pairs of each module (result[morph] in recognize_tweet)
+        :param morph_result: (dict) entity-confidence score pairs of each module (result[morph] in )
         :return: (Dict) {
                             <String> : [(float) {5}],
                             <String> : [(float) {5}],
                             ...
-                        }
+                        }recognize_tweet
                 Explanation:
                         {
                             <name> : [0-5 * <confidence_score>],
@@ -110,6 +115,9 @@ class EMRecognition:
                 heapq.heappush(result,(new_score,candidate))
 
             result = sorted(result, key=lambda x: x[0], reverse=True)
+
+        self.logger.info("[Core] Final Result : " + str(result))
+
         return {name: score for (score,name) in result}
 
 

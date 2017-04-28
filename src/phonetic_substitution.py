@@ -1,27 +1,81 @@
 import heapq
 import jellyfish
 import os
-import re
-
+import collections
 from pypinyin import pinyin, lazy_pinyin
 
 from settings import config
 from src.common import CN_CHAR_REGEX
 from src.logger import Logger, EmptyLogger
 
+ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+class NorvigSpellChecking:
+    '''
+    Reference: Python Spell Checker
+    Author: mattalcock
+    URL: https://github.com/mattalcock/blog/blob/master/2012/12/5/python-spell-checker.rst
+    '''
+    def __init__(self, word_list):
+        '''
+        :param word_list: List[String] list of names
+        '''
+        self.known_words = word_list
+        self.NWORDS = self.train(word_list)
+
+    def train(self, features):
+        model = collections.defaultdict(lambda: 1)
+        for f in features:
+            model[f] += 1
+        return model
+
+    def edits1(self, word):
+        s = [(word[:i], word[i:]) for i in range(len(word) + 1)]
+        deletes = [a + b[1:] for a, b in s if b]
+        transposes = [a + b[1] + b[0] + b[2:] for a, b in s if len(b) > 1]
+        replaces = [a + c + b[1:] for a, b in s for c in ALPHABET if b]
+        inserts = [a + c + b for a, b in s for c in ALPHABET]
+        return set(deletes + transposes + replaces + inserts)
+
+    def known_edits2(self, word):
+        return set(e2 for e1 in self. edits1(word) for e2 in self.edits1(e1) if e2 in self.NWORDS)
+
+    def known(self, words):
+        return set(w for w in words if w in self.NWORDS)
+
+    def get_similar_phone(self, _name):
+        if len(_name) == 0:
+            return []
+        candidates = self.known([_name]) or self.known(self.edits1(_name)) or \
+                     self.known_edits2(_name) or [_name]
+        return candidates
+
 
 class PhoneticSubstitution:
     def __init__(self, *args, **kwargs):
-        self.logger = kwargs['logger']
         self.max_similar_names = kwargs.get('max_similar_names', 5)
 
         try:
+            self.logger = kwargs.get('logger')
             self.name_list = kwargs.get("name_list")
         except KeyError as e:
             if e == "logger":
                 self.logger = EmptyLogger()
             elif e == "name_list":
                 self.logger.warning(str(e) + " is not provided when initializing PhoneticSubstitution.")
+
+        self.logger.info("[Phonetic] Building metaphone dictionary")
+        self.phone_dict = {}
+        for n in self.name_list:
+            cur_metaphone = jellyfish.metaphone(self.get_pinyin(n))
+            if cur_metaphone in self.phone_dict:
+                self.phone_dict[cur_metaphone].append(n)
+            else:
+                self.phone_dict[cur_metaphone] = [n]
+
+        self.norvig_instance = NorvigSpellChecking(self.phone_dict.keys())
+
+        self.logger.info("[Phonetic] Metaphone dictionary finished")
 
         self.mis_match_penalty = 4
         self.mis_match_similar_phone_penalty = 1
@@ -124,12 +178,14 @@ class PhoneticSubstitution:
         cn_str_b = self.get_pinyin("".join(str_b), space_seperated=False)
         phone_a, phone_b = jellyfish.metaphone(cn_str_a), jellyfish.metaphone(cn_str_b)
 
-        if config.DEBUG:
-            print(phone_a, phone_b)
-
         # Calculate phone edit distance and phone similarity
         edit_distance = self._phone_edit_distance(phone_a, phone_b)
         max_score = max(len(phone_a), len(phone_b)) * 4 - abs(len(phone_a) - len(phone_b))
+        if max_score == 0:
+            if str_a == str_b:
+                return 1
+            else:
+                return 0
         similarity = 1 - edit_distance / max_score
 
         return similarity
@@ -147,10 +203,17 @@ class PhoneticSubstitution:
             self.logger.error("name_dict is not initialized.")
             return
 
+        self.logger.info("[Phonetic] Checking for: " + str(_name))
+
         # Use heap to store names with the highest score
         top_names = []
 
-        for person_name in self.name_list:
+        filtered_list = []
+        name_phone = jellyfish.metaphone(self.get_pinyin(_name))
+        for phone in self.norvig_instance.get_similar_phone(name_phone):
+            filtered_list += self.phone_dict[phone]
+
+        for person_name in filtered_list:
             similarity_score = self.get_similarity_score(_name, person_name)
             if len(top_names) < self.max_similar_names:
                 heapq.heappush(top_names, (similarity_score, person_name))
@@ -160,6 +223,8 @@ class PhoneticSubstitution:
                     heapq.heappush(top_names, (similarity_score, person_name))
 
         top_names = sorted(top_names, key=lambda x: x[0], reverse=True)
+
+        self.logger.info("[Phonetic] Results: " + str(top_names))
 
         return {name: score for (score, name) in top_names}
 
@@ -174,11 +239,4 @@ if __name__ == '__main__':
     # Enya, Eagles, Kurt Cobain, Kit Haringtom, The Chainsmokers, Green Day, Linkin Park, James Franco
 
     py_converter = PhoneticSubstitution(logger=logger, name_list=names)
-    #print(py_converter.get_pinyin("菜English", space_seperated=True))
-
-    # Taylor Swift => Taylor Thunderbolt
-    #print(py_converter.get_similarity_score(u"泰勒斯威夫特", "泰勒十万伏特"))
-
-    #print(py_converter.phone_edit_distance("KBBRYNT", "KBBLNT"))
     print(py_converter.get_similar_names("泰勒十万伏特"))
-    #print(py_converter.get_similar_names("付兰"))

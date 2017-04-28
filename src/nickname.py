@@ -72,6 +72,8 @@ class NicknameGeneration:
 
     def nb_classify(self, name_entity, morph, prior, likelihood):
         max_likelihood = 0.0
+        if len(name_entity) == 0:
+            return ""
         result = name_entity[0]
         for name in name_entity:
             outerkey = name
@@ -128,7 +130,7 @@ class NicknameGeneration:
         # Change it to Dict{<name>: <confidence_score>, <name>: <confidence_score>}
 
         result = self.nb_classify(name_entity, _name, prior, likelihood)
-        result_num, morph_num = self.find_amount(result, morph, os.path.join(config.DICT_ROOT, "morph-entity.txt"))
+        result_num, morph_num = self.find_amount(result, _name, os.path.join(config.DICT_ROOT, "morph-entity.txt"))
         if result_num == 0:
             return 1.0/(len(name_entity)+1)
         if 2*result_num <= len(name_entity) < 10*result_num:
