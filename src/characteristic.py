@@ -1,7 +1,7 @@
 from gensim.models import Word2Vec
-import os
 from settings.config import WORD2VEC_ROOT
-from src.logger import Logger, EmptyLogger
+from src.logger import EmptyLogger
+import os
 
 class Characteristic:
 
@@ -10,8 +10,6 @@ class Characteristic:
             self.logger = kwargs['logger']
         except KeyError as e:
             self.logger = EmptyLogger()
-        # self.logger = kwargs['logger']
-        print(self.logger)
         self.model = None
         self.load_model()
 
@@ -68,7 +66,7 @@ class Characteristic:
         res = {}
         try:
             self.logger.info("[Characteristic] Extacting possible name entities of: %s" %morph)
-            names = self.model.similar_by_word(morph, topn=10)
+            names = self.model.similar_by_word(morph, topn=5)
         except KeyError as e:
             self.logger.error(e)
         for name in names:
@@ -79,8 +77,8 @@ class Characteristic:
 
 if __name__ == '__main__':
     c = Characteristic()
-    query = "波什" #O'Neal
-    query2 = "龙王" #Kobe
+    query = "戚哥" #O'Neal
+    query2 = "戚薇" #Kobe
     c.get_similar_names(query)
-    c.get_related(query,20)
+    c.get_related(query,10)
     c.get_similarity_score(query,query2)

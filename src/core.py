@@ -62,7 +62,7 @@ class EMRecognition:
 
         pass
 
-    def recognize_tweet(self, tweet, morphs=None):
+    def recognize_tweet(self, tweet):
         '''
         Extract name entity morphs from a tweet.
         :param tweet: (String) content of the tweet(weibo)
