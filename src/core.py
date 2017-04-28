@@ -6,6 +6,7 @@ from src.common import CN_CHAR_REGEX
 from src.logger import Logger
 
 from src.ner import ChineseNER
+#from src.characteristic import Characteristic
 from src.nickname import NicknameGeneration
 from src.phonetic_substitution import PhoneticSubstitution
 from src.spelling_decomposition import SpellingDecomposition
@@ -21,13 +22,15 @@ class EMRecognition:
 
         '''Recognition_modules stores classes of every method for EMR recognition'''
         self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition,Translation]
+        self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition,Translation]
+        #self.recognition_classes = [PhoneticSubstitution, SpellingDecomposition]
 
         ''' recognition_objects stores instances of every module as
             {<module_name>: ['object': <module_object>, 'confidence': <float>], ...}'''
         self.recognition_modules = {}
 
         ''' logger prints and stores log files and is passed on to every instance'''
-        logger = Logger()
+        self.logger = Logger()
 
         # Load a dictionary with all celebrities' names
         known_name_list = []
@@ -38,12 +41,13 @@ class EMRecognition:
         args = []
 
         kwargs = {
-            'logger': logger,
+            'logger': self.logger,
             'name_list': known_name_list,
         }
 
         for _class in self.recognition_classes:
             class_name = _class.__name__
+            self.logger.info("[Core] Initializing module " + class_name)
             self.recognition_modules[class_name] = {
                 'instance': _class(*args,  **kwargs),
                 'confidence': 1.0
@@ -115,14 +119,17 @@ class EMRecognition:
                 heapq.heappush(result,(new_score,candidate))
 
             result = sorted(result, key=lambda x: x[0], reverse=True)
-        return {name: score for (score,name) in result[:5]}
+
+        self.logger.info("[Core] Final Result : " + str(result))
+
+        return {name: score for (score,name) in result}
 
 
     def train_nbmodel(self):
         pri = {}
         total_size = 0
         pro = {}
-        with open("method_classification.txt","r", encoding='utf-8') as f:
+        with open(os.path.join(config.DICT_ROOT, "method_classification.txt"), encoding='utf-8') as f:
             for line in f:
                 data = line.strip().split(" ")
                 classes = data[1].split(",")
@@ -146,7 +153,6 @@ class EMRecognition:
 if __name__ == '__main__':
     emr = EMRecognition()
     emr.recognize_tweet("这是就是一个测试而已")
-    #print(EMRecognition.train_nbmodel())
 
     # names = set()
     # with open(os.path.join(config.DICT_ROOT, "celebrity.txt"), encoding="utf-8") as f:
