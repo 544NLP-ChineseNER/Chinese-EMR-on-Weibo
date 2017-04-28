@@ -3,11 +3,22 @@ import heapq
 from urllib.request import urlopen,quote
 import json
 
+from src.logger import Logger, EmptyLogger
+
 class Translation:
-    def __init__(self,namelist):
-        #self.logger = kwargs['logger']
+    def __init__(self, *args, **kwargs):
+
         #self.ce_translator = Translator(from_lang="zh",to_lang="en")
-        self.name_list = namelist
+
+        try:
+            self.name_list = kwargs.get("name_list")
+            self.logger = kwargs['logger']
+        except KeyError as e:
+            if e == "logger":
+                self.logger = EmptyLogger()
+            elif e == "name_list":
+                self.logger.warning(str(e) + " is not provided when initializing Translation.")
+
         self.url = ""
         self.treshold = 10
 

@@ -3,6 +3,12 @@ import os
 from settings import config
 from src.core import EMRecognition
 
+
+def dbg_print(s, file=None):
+    print(s)
+    if file is not None:
+        print(s, file=file)
+
 if __name__ == '__main__':
     emr_instance = EMRecognition()
     log_file_handler = open(os.path.join(config.LOG_ROOT, "test.log"), 'w', encoding="utf-8")
@@ -31,38 +37,44 @@ if __name__ == '__main__':
             result = emr_instance.recognize_tweet(line)
             line_answers = answers[line_num]
 
-            print("[Line %s ] Answer: %s." % (
+            dbg_print("[Line %s ] Answer: %s." % (
                 str(line_num),
                 str(answers[line_num])
             ), file=log_file_handler)
 
+            line_num += 1
+            if result is None:
+                missed_morph_count += len(line_answers)
+                continue
+
             for morph in result:
-                result_names = [_name for (_name, score) in result[morph]]
+                #result_names = [_name for (_name, score) in result[morph]]
+                result_names = result[morph]
                 if morph in line_answers:
                     if line_answers[morph] in result_names:
-                        print("\tCorrect answer: %s." % morph, file=log_file_handler)
+                        dbg_print("\tCorrect answer: %s." % morph, file=log_file_handler)
                         correct_morph_count += 1
                     else:
-                        print("\tCorrect morph, wrong name: %s. Correct: %s ; answers: %s" % (
+                        dbg_print("\tCorrect morph, wrong name: %s. Correct: %s ; answers: %s" % (
                             morph,
                             line_answers[morph],
                             " ".join(result_names)
                         ), file=log_file_handler)
                         correct_morph_wrong_name_count += 1
                 else:
-                    print("\tWrong morph: %s ." % (
+                    dbg_print("\tWrong morph: %s ." % (
                         morph
                     ), file=log_file_handler)
-                    correct_morph_wrong_name_count += 1
+                    wrong_morph_count += 1
 
             for ans in line_answers:
                 if ans not in result:
-                    print("\tMissed morph: %s" % ans, file=log_file_handler)
+                    dbg_print("\tMissed morph: %s" % ans, file=log_file_handler)
                     missed_morph_count += 1
 
-    print("------------------ Statistics --------------------", file=log_file_handler)
-    print("Correct: %s", str(correct_morph_count), file=log_file_handler)
-    print("Correct morph wrong name: %s", str(correct_morph_wrong_name_count), file=log_file_handler)
-    print("Wrong morph: %s", str(wrong_morph_count), file=log_file_handler)
-    print("Missed morph: %s", str(missed_morph_count), file=log_file_handler)
-    print("--------------------------------------------------")
+    dbg_print("------------------ Statistics --------------------", file=log_file_handler)
+    dbg_print("Correct: %s" % str(correct_morph_count), file=log_file_handler)
+    dbg_print("Correct morph wrong name: %s" % str(correct_morph_wrong_name_count), file=log_file_handler)
+    dbg_print("Wrong morph: %s" % str(wrong_morph_count), file=log_file_handler)
+    dbg_print("Missed morph: %s" % str(missed_morph_count), file=log_file_handler)
+    dbg_print("--------------------------------------------------")

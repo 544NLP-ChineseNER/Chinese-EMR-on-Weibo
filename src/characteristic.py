@@ -20,6 +20,7 @@ class Characteristic:
         # self.logger = kwargs['logger']
         self.model = None
         self.logger = logging.Logger('characteristic')
+        self.load_model()
 
     def load_model(self):
         '''
