@@ -121,6 +121,8 @@ class NicknameGeneration:
         :return: ()
         '''
         name_entity = self.nickname_generation(_name)
+        if not name_entity:
+            return {'No similar names!': 0.0}
         #print(name_entity)
         #print(len(name_entity))
         prior, likelihood = self.nb_learn(os.path.join(config.DICT_ROOT, "morph-entity.txt"))
@@ -132,7 +134,7 @@ class NicknameGeneration:
         result = self.nb_classify(name_entity, _name, prior, likelihood)
         result_num, morph_num = self.find_amount(result, _name, os.path.join(config.DICT_ROOT, "morph-entity.txt"))
         if result_num == 0:
-            return 1.0/(len(name_entity)+1)
+            return {result: 1.0/(len(name_entity)+1)}
         if 2*result_num <= len(name_entity) < 10*result_num:
             confidence_score = result_num/(morph_num + len(name_entity)/10.0)
         elif len(name_entity) < 2*result_num:
