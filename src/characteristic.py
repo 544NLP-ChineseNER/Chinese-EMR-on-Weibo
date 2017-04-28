@@ -4,6 +4,16 @@ import os
 from settings.config import WORD2VEC_ROOT
 import jieba.posseg as pseg
 
+def load_stop_list():
+    stoplist = []
+    with codecs.open('stoplist.txt','r','utf-8') as f:
+        lines = f.readlines()
+        for line in lines:
+            line = line.rstrip().split(' ')[0]
+            stoplist += [line]
+        f.close()
+    return stoplist
+    
 class Characteristic:
 
     def __init__(self, *args, **kwargs):
