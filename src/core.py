@@ -1,4 +1,5 @@
 import os
+import heapq
 
 from settings import config
 from src.common import CN_CHAR_REGEX
@@ -9,6 +10,7 @@ from src.nickname import NicknameGeneration
 from src.phonetic_substitution import PhoneticSubstitution
 from src.spelling_decomposition import SpellingDecomposition
 from src.translation_and_transliteration import Translation
+from src.tweet_name_extraction import TweetNameExtractor
 
 
 class EMRecognition:
@@ -18,7 +20,7 @@ class EMRecognition:
         '''
 
         '''Recognition_modules stores classes of every method for EMR recognition'''
-        self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition]
+        self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition,Translation]
 
         ''' recognition_objects stores instances of every module as
             {<module_name>: ['object': <module_object>, 'confidence': <float>], ...}'''
@@ -47,7 +49,7 @@ class EMRecognition:
                 'confidence': 1.0
             }
 
-        #self.ner_module = ChineseNER()
+        self.ner_module = ChineseNER()
 
         pass
 
@@ -81,7 +83,59 @@ class EMRecognition:
                 module = self.recognition_modules[module_name]['instance']
                 results[morph][module_name] = module.get_similar_names(morph)
 
+    def combine_results(self,morph,morph_result):
+        '''
+        Get final score of possible entity names combining all methods
+        :param morph: (string) morph computing
+        :param morph_result: (dict) entity-confidence score pairs of each module (result[morph] in recognize_tweet)
+        :return: (Dict) {
+                            <String> : [(float) {5}],
+                            <String> : [(float) {5}],
+                            ...
+                        }
+                Explanation:
+                        {
+                            <name> : [0-5 * <confidence_score>],
+                            <morph> : [0-5 * <confidence_score>],
+                        }
+        '''
+        result = []
+        prior,prob = self.train_nbmodel()
+        for module in morph_result:
+            probability = prior[module]
+            if morph in prob:
+                probability*=prob[morph][module]
+            for candidate in morph_result[module]:
+                new_score = probability*morph_result[module][candidate]
+                heapq.heappush(result,(new_score,candidate))
 
+            result = sorted(result, key=lambda x: x[0], reverse=True)
+        return {name: score for (score,name) in result}
+
+
+    def train_nbmodel(self):
+        pri = {}
+        total_size = 0
+        pro = {}
+        with open(os.path.join(config.DICT_ROOT, "method_classification.txt"), encoding='utf-8') as f:
+            for line in f:
+                data = line.strip().split(" ")
+                classes = data[1].split(",")
+                for c in classes:
+                    total_size+=1
+                    pri[c] = pri.get(c, 0) + 1
+                    if data[0] not in pro:
+                        pro[data[0]] = {}
+                    pro[data[0]][c] = pro[data[0]].get(c,0)+1
+            for i in pro:
+                pro[i]['Characteristic'] = (pro[i].get("Characteristic",0)+1)/(pri['Characteristic']+len(pro))
+                pro[i]['Translation'] = (pro[i].get("Translation",0)+1)/(pri['Translation']+len(pro))
+                pro[i]['PhoneticSubstitution'] = (pro[i].get("PhoneticSubstitution",0)+1)/(pri['PhoneticSubstitution']+len(pro))
+                pro[i]['NicknameGeneration'] = (pro[i].get("NicknameGeneration",0)+1)/(pri['NicknameGeneration']+len(pro))
+                pro[i]['SpellingDecomposition'] = (pro[i].get("SpellingDecomposition",0)+1)/(pri['SpellingDecomposition']+len(pro))
+            for p in pri:
+                pri[p] = pri.get(p)/total_size
+        return pro,pri
 
 
 if __name__ == '__main__':
@@ -98,5 +152,3 @@ if __name__ == '__main__':
     #     new_file.write(n)
     #
     # new_file.close()
-
-
