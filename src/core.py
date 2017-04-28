@@ -142,7 +142,7 @@ class EMRecognition:
 
         self.logger.info("[Core] Final Result : " + str(result))
 
-        return {name: score for (score,name) in result}
+        return {name: score for (score,name) in result[:5]}
 
 
     def train_nbmodel(self):
