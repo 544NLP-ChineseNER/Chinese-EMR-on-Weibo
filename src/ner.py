@@ -9,7 +9,7 @@ import codecs
 
 def load_stop_list():
     stoplist = []
-    with codecs.open('stoplist.txt','r','utf-8') as f:
+    with codecs.open(os.path.join(config.NER_ROOT,'stoplist.txt'),'r','utf-8') as f:
         lines = f.readlines()
         for line in lines:
             line = line.rstrip().split(' ')[0]
