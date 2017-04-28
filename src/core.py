@@ -22,7 +22,8 @@ class EMRecognition:
         '''
 
         '''Recognition_modules stores classes of every method for EMR recognition'''
-        self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition, Translation, Characteristic]
+        self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition, Translation,
+                                    Characteristic]
 
         ''' recognition_objects stores instances of every module as
             {<module_name>: ['object': <module_object>, 'confidence': <float>], ...}'''
@@ -50,11 +51,14 @@ class EMRecognition:
             'name_list': known_name_list,
         }
 
-        for _class in self.recognition_classes:
+        for i in range(len(self.recognition_classes)):
+            if self.enabled_module & (1 << i) == 0:
+                continue
+            _class = self.recognition_classes[i]
             class_name = _class.__name__
             self.logger.info("[Core] Initializing module " + class_name)
             self.recognition_modules[class_name] = {
-                'instance': _class(*args,  **kwargs),
+                'instance': _class(*args, **kwargs),
                 'confidence': 1.0
             }
 
@@ -62,7 +66,7 @@ class EMRecognition:
 
         pass
 
-    def recognize_tweet(self, tweet):
+    def recognize_tweet(self, tweet, morphs=None):
         '''
         Extract name entity morphs from a tweet.
         :param tweet: (String) content of the tweet(weibo)
@@ -111,8 +115,7 @@ class EMRecognition:
             candidate_lists[morph] = list(morph_result.keys())
         return candidate_lists
 
-
-    def combine_results(self,morph,morph_result):
+    def combine_results(self, morph, morph_result):
         '''
         Get final score of possible entity names combining all methods
         :param morph: (string) morph computing
@@ -129,45 +132,46 @@ class EMRecognition:
                         }
         '''
         result = []
-        prob,prior = self.train_nbmodel()
+        prob, prior = self.train_nbmodel()
         for module in morph_result:
             probability = prior[module]
             if morph in prob:
-                probability*=prob[morph][module]
+                probability *= prob[morph][module]
             for candidate in morph_result[module]:
-                new_score = probability*morph_result[module][candidate]
-                heapq.heappush(result,(new_score,candidate))
+                new_score = probability * morph_result[module][candidate]
+                heapq.heappush(result, (new_score, candidate))
 
             result = sorted(result, key=lambda x: x[0], reverse=True)
 
         self.logger.info("[Core] Final Result : " + str(result))
 
-        return {name: score for (score,name) in result[:5]}
-
+        return {name: score for (score, name) in result[:5]}
 
     def train_nbmodel(self):
         pri = {}
         total_size = 0
         pro = {}
+
+        using_classes = self.recognition_modules.keys()
         with open(os.path.join(config.DICT_ROOT, "method_classification.txt"), encoding='utf-8') as f:
             for line in f:
                 data = line.strip().split(" ")
                 classes = data[1].split(",")
                 for c in classes:
-                    total_size+=1
+                    if c not in using_classes:
+                        continue
+                    total_size += 1
                     pri[c] = pri.get(c, 0) + 1
                     if data[0] not in pro:
                         pro[data[0]] = {}
-                    pro[data[0]][c] = pro[data[0]].get(c,0)+1
+                    pro[data[0]][c] = pro[data[0]].get(c, 0) + 1
             for i in pro:
-                pro[i]['Characteristic'] = (pro[i].get("Characteristic",0)+1)/(pri['Characteristic']+len(pro))
-                pro[i]['Translation'] = (pro[i].get("Translation",0)+1)/(pri['Translation']+len(pro))
-                pro[i]['PhoneticSubstitution'] = (pro[i].get("PhoneticSubstitution",0)+1)/(pri['PhoneticSubstitution']+len(pro))
-                pro[i]['NicknameGeneration'] = (pro[i].get("NicknameGeneration",0)+1)/(pri['NicknameGeneration']+len(pro))
-                pro[i]['SpellingDecomposition'] = (pro[i].get("SpellingDecomposition",0)+1)/(pri['SpellingDecomposition']+len(pro))
+                for class_name in using_classes:
+                    pro[i][class_name] = (pro[i].get(class_name, 0) + 1) / (pri[class_name] + len(pro))
+
             for p in pri:
-                pri[p] = pri.get(p)/total_size
-        return pro,pri
+                pri[p] = pri.get(p) / total_size
+        return pro, pri
 
 
 if __name__ == '__main__':
