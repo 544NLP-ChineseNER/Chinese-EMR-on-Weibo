@@ -19,24 +19,32 @@ In the first step, we use Jieba Chinese text segmentation and Stanford POS tagge
  Python3
 
  ### Tools to install:
- jieba, ntlk, gensim, pypinyin, pyenchant, bs4, selenium
+ jieba, ntlk, gensim, pypinyin, pyenchant, jellyfish, bs4, selenium
 
  ### Usage
- > from src.core import EMRecognition
+   <code>
+   $ python3
  
- > emr_instance = EMRecognition()
+   from src.core import EMRecognition
  
- > emr_instance.recognize_tweet("我是一条咸鱼")
+   emr_instance = EMRecognition()
  
+   emr_instance.recognize_tweet("我是一条咸鱼")
+ 
+   </code>
 
  ### Test:
- Locate to the root directory of this project.
+   Locate to the root directory of this project.
 
- > export PYTHONPATH=OLD_${PYTHONPATH}
+   <code>
+  
+   $ export PYTHONPATH=OLD_${PYTHONPATH}
  
- > export PYTHONPATH=${PWD}
+   $ export PYTHONPATH=${PWD}
  
- > cd test
+   $ cd test
  
- > python3 evaluation.py
+   $ python3 evaluation.py
+ 
+   </code>
  
