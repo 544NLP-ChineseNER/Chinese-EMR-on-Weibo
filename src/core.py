@@ -24,7 +24,6 @@ class EMRecognition:
         '''Recognition_modules stores classes of every method for EMR recognition'''
         self.recognition_classes = [PhoneticSubstitution, NicknameGeneration, SpellingDecomposition, Translation,
                                     Characteristic]
-
         ''' recognition_objects stores instances of every module as
             {<module_name>: ['object': <module_object>, 'confidence': <float>], ...}'''
         self.recognition_modules = {}
@@ -62,7 +61,7 @@ class EMRecognition:
                 'confidence': 1.0
             }
 
-        self.ner_module = ChineseNER()
+        self.ner_module = ChineseNER(args,kwargs)
 
         pass
 

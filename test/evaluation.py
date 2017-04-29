@@ -22,7 +22,7 @@ if __name__ == '__main__':
                      ...
                 ]'''
     answers = []
-    with open("answer_data", encoding='utf-8') as answer_file_handler:
+    with open("answer_data.txt", encoding='utf-8') as answer_file_handler:
         for line in answer_file_handler:
             names = line.split()
             line_answers = {}
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     correct_morph_count, correct_morph_wrong_name_count = 0, 0
     wrong_morph_count, missed_morph_count = 0, 0
 
-    with open("test_data", encoding='utf-8') as test_file_handler:
+    with open("test_data.txt", encoding='utf-8') as test_file_handler:
         line_num = 0
         for line in test_file_handler:
             line_answers = answers[line_num]
